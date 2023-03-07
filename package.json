@@ -1,0 +1,27 @@
+{
+  "name": "pis-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rodrigosantos003/pis-project.git"
+  },
+  "authors": {
+    "author1": "Rodrigo Santos",
+    "author2": "João Fernandes"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rodrigosantos003/pis-project/issues"
+  },
+  "homepage": "https://github.com/rodrigosantos003/pis-project#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
