@@ -12,12 +12,17 @@
 <body>
     <img src="img/climateville-no_bg.png" />
 
-    <h1>Descobre o tempo na tua cidade</h1>
+    <h1>Descobre como está o tempo na tua cidade</h1>
 
-    <form action="#" method="post" class="weatherForm">
-        <input type="text" name="city" placeholder="Introduz a tua cidade" class="inputText" />
-        <input type="submit" value="Submeter" class="formButton" />
-    </form>
+    <button onclick="getWeatherOnCurrentLocation()">Ver Meteorologia</button>
+
+    <div>
+        <p>Temperatura: <span id="temp"></span></p>
+        <p>Vento: <span id="wind"></span></p>
+        <p>Prob. Precipitação <span id="precip"></span></p>
+    </div>
+
+    <script src="./js/index.js"></script>
 </body>
 
 </html>
