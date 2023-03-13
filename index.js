@@ -1,4 +1,5 @@
 const express = require("express");
+const https = require("https");
 
 const app = express();
 
@@ -28,6 +29,24 @@ app.post("/api/user/:id/record", (req, res) => {
 
 app.delete("/api/user/:id/record/:id", (req, res) => {
   //TODO: Delete a weather record
+});
+
+app.get("/api/weather/latitude/:latitude/longitude/:longitude", (req, res) => {
+  //Request weather info from Open-Meteo API
+  https.get(
+    `https://api.open-meteo.com/v1/forecast?latitude=${req.params.latitude}&longitude=${req.params.longitude}&hourly=temperature_2m&current_weather=true`,
+    (response) => {
+      let data = "";
+      response.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      response.on("end", () => {
+        let finalData = JSON.parse(data);
+        res.json(finalData.current_weather);
+      });
+    }
+  );
 });
 
 app.listen(8081, () => {

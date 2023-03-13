@@ -12,7 +12,7 @@ function getWeatherOnCurrentLocation() {
 }
 
 function requestWeather(latitude, longitude) {
-  var url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m&current_weather=true`;
+  var url = `/api/weather/latitude/${latitude}/longitude/${longitude}`;
   var xhr = new XMLHttpRequest();
 
   xhr.open("GET", url);
@@ -21,7 +21,7 @@ function requestWeather(latitude, longitude) {
       var response = JSON.parse(this.responseText);
       if (this.status === 200) {
         console.log(response);
-        renderResults(response.current_weather);
+        renderResults(response);
       }
     }
   };
