@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Sono:wght@300;500;700&display=swap');
+
+:root{
+--font-size-sm: clamp(0.8rem, 0.42vw + 0.69rem, 1.03rem);
+--font-size-base: clamp(1rem, 0.68vw + 0.83rem, 1.38rem);
+--font-size-md: clamp(1.25rem, 1.06vw + 0.99rem, 1.83rem);
+--font-size-lg: clamp(1.56rem, 1.6vw + 1.16rem, 2.44rem);
+--font-size-xl: clamp(1.95rem, 2.37vw + 1.36rem, 3.26rem);
+--font-size-xxl: clamp(2.44rem, 3.45vw + 1.58rem, 4.34rem);
+--font-size-xxxl: clamp(3.05rem, 4.97vw + 1.81rem, 5.79rem);
+}
+
+
+body{
+    font-size: var(--font-size-base);
+    font-family: 'Sono', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: #642B73;
+    background: -webkit-linear-gradient(to right, #C6426E, #642B73);
+    background: linear-gradient(to right, #C6426E, #642B73);
+}
+
+.main-content{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    height: 70%;
+    width: 23%;
+    border-radius: 20px;
+    background-color: white;
+}
+
+h1 {
+    font-size: var(--font-size-xl);
+    margin-top: 60px;
+    margin-bottom: 80px;
+}
+
+.showpassword-container{
+    display: flex;
+    gap: 0.3rem;
+    padding-top: 7px;
+    width: 66%;
+}
+
+.label{
+    font-size: var(--font-size-sm);
+    user-select: none;
+}
+
+.textbox{
+    width: 60%;
+    background-color: lightgray;
+    border: 1px gray solid;
+    border-radius: 5px;
+    height: fit-content;
+    font-size: var(--font-size-base);
+    padding: 10px;
+    margin-top: 40px;
+}
+
+.login{
+    font-size: var(--font-size-md);
+    border: 1px gray solid;
+    background-color: #C6426E;
+    color: white;
+    width: 65%;
+    padding: 10px;
+    cursor: pointer;
+    margin-top: 90px;
+}
