@@ -1,4 +1,6 @@
 const express = require("express");
+const requestHandlers = require("./scripts/request-handlers.js");
+
 const app = express();
 
 app.use(express.static("public"));
@@ -9,9 +11,7 @@ app.get("/api/user/:id", (req, res) => {
   //TODO: Obter um utilizador pelo Id
 });
 
-app.post("/api/user", (req, res) => {
-  //TODO: Inserir um user
-});
+app.post("/api/user", requestHandlers.signup);
 
 app.put("/api/user/:id", (req, res) => {
   //TODO: Atualizar um user
