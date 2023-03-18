@@ -10,19 +10,13 @@ app.use(express.json());
 
 /*USERS*/
 
-app.get("/api/user/:id", (req, res) => {
-  //TODO: Obter um utilizador pelo Id
-});
+app.get("/api/user/:id", userHandlers.getUserById);
 
 app.post("/api/user", userHandlers.signup);
 
-app.put("/api/user/:id", (req, res) => {
-  //TODO: Atualizar um user
-});
+app.put("/api/user/:id", userHandlers.updateUser);
 
-app.delete("/api/user/:id", (req, res) => {
-  //TODO: Eliminar um user
-});
+app.delete("/api/user/:id", userHandlers.deleteUser);
 
 app.post("/api/login", userHandlers.login);
 

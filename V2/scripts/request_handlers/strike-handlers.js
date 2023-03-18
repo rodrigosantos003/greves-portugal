@@ -59,7 +59,7 @@ function insertStrike(request, response) {
   if (category && startDate && endDate && description) {
     mysqlPool.query(
       mysql.format(
-        "insert into strike (category, startDate, entDate, description), values(?, ?, ?, ?)",
+        "insert into strike (category, start_date, end_date, description) values(?, ?, ?, ?)",
         [category, startDate, endDate, description]
       ),
       (err, rows) => {
@@ -95,7 +95,7 @@ function updateStrike(request, response) {
   if (id && category && startDate && endDate && description) {
     mysqlPool.query(
       mysql.format(
-        "update strike set category=?, startDate=?, endDate=?, description=?",
+        "update strike set category=?, start_date=?, end_date=?, description=?",
         [category, startDate, endDate, description]
       ),
       (err, rows) => {
@@ -104,7 +104,13 @@ function updateStrike(request, response) {
         else {
           response.json({
             message: "Greve atualizada com sucesso.",
-            greve: rows,
+            greve: {
+              id: id,
+              category: category,
+              startDate: startDate,
+              endDate: endDate,
+              description: description,
+            },
           });
         }
       }
