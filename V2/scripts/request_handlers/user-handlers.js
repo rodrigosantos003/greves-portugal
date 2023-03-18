@@ -54,28 +54,42 @@ function signup(request, response, next) {
   }
 }
 
-function login(request, username, password, done) {
-  mysqlPool.query(
-    mysql.format("select * from user where username = ?", [username]),
-    (err, rows) => {
-      if (err) {
-        done(err);
-      } else if (!rows.length) {
-        done(null, false, { message: "Utilizador não encontrado." });
-      } else {
-        bcrypt.compare(password, rows[0].password, (err, result) => {
-          if (err) {
-            done(err);
-          } else if (result) {
-            delete rows[0].password;
-            done(null, rows[0]);
-          } else {
-            done(null, false, { message: "Password incorreta." });
-          }
-        });
+function login(request, response) {
+  var email = request.body.email;
+  var password = request.body.password;
+
+  if (email && password) {
+    mysqlPool.query(
+      mysql.format("select * from user where email = ?", [email]),
+      (err, rows) => {
+        if (err)
+          response.json({ message: "Ocorreu um erro", error: err.stack });
+        else if (!rows.length)
+          response.json({ message: "Utilizador não encontrado." });
+        else {
+          bcrypt.compare(password, rows[0].password, (err, result) => {
+            if (err) {
+              response.json({ message: "Ocorreu um erro", error: err.stack });
+            } else if (result) {
+              delete rows[0].password;
+              response.json({
+                message: "Login efetuado com sucesso",
+                user: rows,
+              });
+            } else {
+              response.json({ message: "Password incorreta." });
+              done(null, false, { message: "Password incorreta." });
+            }
+          });
+        }
       }
-    }
-  );
+    );
+  } else {
+    response
+      .status(400)
+      .json({ message: "Os campos não estão todos preenchidos." });
+  }
 }
 
-(module.exports.signup = signup), (module.exports.login = login);
+module.exports.signup = signup;
+module.exports.login = login;
