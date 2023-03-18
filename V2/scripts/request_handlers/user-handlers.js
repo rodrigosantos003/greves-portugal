@@ -1,5 +1,5 @@
 const mysql = require("mysql2");
-const mysqlPool = require("./mysql-pool");
+const mysqlPool = require("../mysql-pool");
 const bcrypt = require("bcrypt");
 
 function signup(request, response, next) {

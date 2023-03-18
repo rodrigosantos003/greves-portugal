@@ -1,5 +1,6 @@
 const express = require("express");
-const requestHandlers = require("./scripts/request-handlers.js");
+const userHandlers = require("./scripts/request_handlers/user-handlers.js");
+const strikeHandlers = require("./scripts/request_handlers/strike-handlers.js");
 
 const app = express();
 
@@ -7,11 +8,13 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+/*USERS*/
+
 app.get("/api/user/:id", (req, res) => {
   //TODO: Obter um utilizador pelo Id
 });
 
-app.post("/api/user", requestHandlers.signup);
+app.post("/api/user", userHandlers.signup);
 
 app.put("/api/user/:id", (req, res) => {
   //TODO: Atualizar um user
@@ -21,29 +24,21 @@ app.delete("/api/user/:id", (req, res) => {
   //TODO: Eliminar um user
 });
 
-app.get("/api/greve", (req, res) => {
-  //TODO: Ver todas as greves
-});
+app.post("/api/login", userHandlers.login);
 
-app.get("/api/greve/:category", (req, res) => {
-  //TODO: Obter todas as greves de uma categoria (ex: Comboios)
-});
+/*STRIKES*/
 
-app.get("/api/greve/:id", (req, res) => {
-  //TODO: Obter uma greve pelo id
-});
+app.get("/api/strike", strikeHandlers.getStrikes);
 
-app.post("/api/greve", (req, res) => {
-  //TODO: Inserir uma greve
-});
+app.get("/api/strike/:category", strikeHandlers.getStrikesByCategory);
 
-app.put("/api/greve/:id", (req, res) => {
-  //TODO: Atualizar uma greve
-});
+app.get("/api/strike/:id", strikeHandlers.getStrikeById);
 
-app.delete("/api/greve/:id", (req, res) => {
-  //TODO: Eliminar uma greve
-});
+app.post("/api/strike", strikeHandlers.insertStrike);
+
+app.put("/api/strike/:id", strikeHandlers.updateStrike);
+
+app.delete("/api/strike/:id", strikeHandlers.deleteStrike);
 
 app.listen(8081, () => {
   console.log("Server running at http://localhost:8081");
