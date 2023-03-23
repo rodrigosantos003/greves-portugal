@@ -19,24 +19,25 @@ body{
     justify-content: center;
     height: 100vh;
     background: #642B73;
-    background: -webkit-linear-gradient(to right, #C6426E, #642B73);
-    background: linear-gradient(to right, #C6426E, #642B73);
+    background: -webkit-linear-gradient(to right, #e05215, #bb4411);
+    background: linear-gradient(to right, #e05215, #bb4411);
 }
 
 .main-content{
     display: flex;
     align-items: center;
     flex-direction: column;
-    height: 85%;
-    width: 30%;
+    height: 75%;
+    width: 75%;
+    max-width: 450px;
     border-radius: 20px;
     background-color: white;
 }
 
 h1 {
     font-size: var(--font-size-xl);
-    margin-top: 50px;
-    margin-bottom: 40px;
+    margin-top: 2vh;
+    margin-bottom: 4vh;
 }
 
 .showpassword-container{
@@ -65,7 +66,7 @@ h1 {
 .registar{
     font-size: var(--font-size-md);
     border: 1px gray solid;
-    background-color: #C6426E;
+    background-color: #a73e11;
     color: white;
     width: 65%;
     padding: 10px;
