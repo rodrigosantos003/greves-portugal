@@ -3,7 +3,7 @@
 ## To run this project please follow the instructions below
 
 1. Create a MySQL database on your root user, using the "create.sql" file, located on the [database](./database/) folder
-2. Create a "connection-options.json" file on the [scripts](./V2/scripts/) folder with the following content:
+2. Create a "connection-options.json" file on the [scripts](./scripts/) folder with the following content:
 
 ```
 {
@@ -19,3 +19,5 @@
 
 - npm install
 - npm run dev OR npm start
+
+## To rapidly test the API on Postman, load the [collection](./projeto_pis.postman_collection.json)
