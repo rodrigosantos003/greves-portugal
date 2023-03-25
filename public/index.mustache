@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/index.css">
+    <title>GrevesPortugal</title>
+</head>
+
+<body>
+    <nav>
+        <h1> GrevesPortugal </h1>
+        <a class="first-link" href="#news">Entrar</a>
+        <a href="#contact">Home</a>
+    </nav>
+
+    <h1 class="title"> Outra vez em greve? </h1>
+    <div class="button-container"> <button class="refreshbtn"> ? </button> <button class="addbtn needsAdmin"> + </button> </div>
+
+    <div class="container">
+        {{#greves}}
+        <div class="card">
+            <div class="card-firstRow"> <h2> {{nome}} </h2> <i class="fa needsAdmin"> &#xf040; </i> <i class="fa needsAdmin"> &#x2715 </i></div>
+            <span> {{categoria}} </span>
+            <div> <span> {{inicio}} </span> - <span> {{fim}} </span> </div>
+        </div>
+        {{/greves}}
+    </div>
+
+</body>
+<script src="js/index.js"></script>
+</html>

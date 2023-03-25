@@ -9,7 +9,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 /*USERS*/
-
 app.get("/api/user/:id", userHandlers.getUserById);
 
 app.post("/api/user", userHandlers.signup);
@@ -21,7 +20,6 @@ app.delete("/api/user/:id", userHandlers.deleteUser);
 app.post("/api/login", userHandlers.login);
 
 /*STRIKES*/
-
 app.get("/api/strike", strikeHandlers.getStrikes);
 
 app.get("/api/strike/:category", strikeHandlers.getStrikesByCategory);
