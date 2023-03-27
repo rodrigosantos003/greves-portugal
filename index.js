@@ -1,21 +1,42 @@
 const express = require("express");
 const userHandlers = require("./scripts/request_handlers/user-handlers.js");
 const strikeHandlers = require("./scripts/request_handlers/strike-handlers.js");
+var mustacheExpress = require("mustache-express");
+const http = require("http")
 
 const app = express();
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.engine("mustache", mustacheExpress());
+app.set("view engine", "mustache");
+app.set("views", __dirname + "/public");
+
+app.get("/", (request, response) => {
+  http.get("http://localhost:8081/api/strike", (res) => {
+    let data = "";
+
+    res.on("data", (chunk) => {
+      data += chunk
+    })
+
+    res.on("end", () => {
+      response.render("index", { greves: JSON.parse(data).greves });
+    })
+  })
+});
+
+app.get("/login", (request, response)=>{
+  response.render("login")
+})
+
+app.get("/registo", (request, response)=>{
+  response.render("register")
+})
 
 /*USERS*/
-app.get("/api/user/:id", userHandlers.getUserById);
-
 app.post("/api/user", userHandlers.signup);
-
-app.put("/api/user/:id", userHandlers.updateUser);
-
-app.delete("/api/user/:id", userHandlers.deleteUser);
 
 app.post("/api/login", userHandlers.login);
 

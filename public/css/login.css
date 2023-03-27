@@ -14,14 +14,22 @@
 body{
     font-size: var(--font-size-base);
     font-family: 'Sono', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     height: 100vh;
     background: #642B73;
     background: -webkit-linear-gradient(to right, #e05215, #bb4411);
     background: linear-gradient(to right, #e05215, #bb4411);
-    overflow: hidden;
+}
+
+main{
+    overflow: scroll;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+main::-webkit-scrollbar{
+    display: none;
 }
 
 .main-content{
@@ -33,6 +41,7 @@ body{
     max-width: 450px;
     border-radius: 20px;
     background-color: white;
+    padding: 0;
 }
 
 h1 {

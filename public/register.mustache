@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrevesPortugal - Registo</title>
+    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/register.css">
+</head>
+
+<body>
+    {{>navbar}}
+
+    <main>
+        <form class="main-content">
+            <h1> REGISTO </h1>
+
+            <form>
+                <input type="text" class="textbox username" id="register-username" placeholder="Nome">
+                <input type="email" class="textbox email" id="register-email" placeholder="Email">
+                <input type="password" class="textbox password" id="register-password" placeholder="Password">
+                <div class="showpassword-container">
+                    <input type="checkbox" name="" class="checkbox" id="showPassword">
+                    <label for="showPassword" class="label"> Mostrar Password </label>
+                </div>
+                <input type="text" class="textbox password" placeholder="Confirm Password">
+                <div class="showpassword-container">
+                    <input type="checkbox" name="" class="checkbox" id="showConfirmPassword">
+                    <label for="showConfirmPassword" class="label"> Mostrar Password </label>
+                </div>
+                <button class="registar" onclick="registerUser()" type="button"> Registar </button>
+
+            </form>
+    </main
+
+        <script src="js/index.js"></script>
+</body>
+
+</html>
