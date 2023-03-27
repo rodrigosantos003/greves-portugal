@@ -14,7 +14,8 @@
 body{
     font-size: var(--font-size-base);
     font-family: 'Sono', sans-serif;
-    /* overflow: hidden; */
+    overflow: scroll;
+    overflow-x: hidden;
     height: 100vh;
     background: #642B73;
     background: -webkit-linear-gradient(to right, #e05215, #bb4411);

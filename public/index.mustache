@@ -14,13 +14,17 @@
     {{>navbar}}
 
     <h1 class="title"> Outra vez em greve? </h1>
-    <div class="button-container"> <button class="refreshbtn"> ? </button> <button class="addbtn needsAdmin" onclick="openPopUp('add')"> + </button> </div>
+    <div class="button-container"> <button class="refreshbtn"> ? </button> <button class="addbtn needsAdmin"
+            onclick="openPopUp('add')"> + </button> </div>
 
     <div class="container">
 
         {{#greves}}
         <div class="card">
-            <div class="card-firstRow"> <h2> {{description}} </h2> <i class="fa needsAdmin" onclick="openPopUp('edit', '{{id}}')"> &#xf040; </i> <i class="fa needsAdmin" onclick="deleteStrike('{{id}}')"> &#x2715 </i></div>
+            <div class="card-firstRow">
+                <h2> {{description}} </h2> <i class="fa needsAdmin" onclick="openPopUp('edit', '{{id}}')"> &#xf040; </i>
+                <i class="fa needsAdmin" onclick="deleteStrike('{{id}}')"> &#x2715 </i>
+            </div>
             <span> {{category}} </span>
             <div> <span> {{start_date}} </span> - <span> {{end_date}} </span> </div>
         </div>
@@ -28,18 +32,20 @@
     </div>
 
     <div id="popup_allpage">
-    <div id="popup">
-        <form>
-            <i class="fa popup-close" onclick="closePopUp()"> &#x2715 </i>
-            <div class="popup-row"> <span> Descrição: </span> <input type="text" id="popup_description"> </div>
-            <div class="popup-row"> <span> Categoria: </span> <input type="text" id="popup_category"> </div>
-            <div class="popup-row"> <span> Data Inicio: </span> <input type="date" id="popup_startDate"> </div>
-            <div class="popup-row"> <span> Data Fim: </span> <input type="date" id="popup_endDate"> </div>
+        <div id="popup">
+            <form>
+                <i class="fa popup-close" onclick="closePopUp()"> &#x2715 </i>
+                <div class="popup-row"> <span> Descrição: </span> <input type="text" id="popup_description"> </div>
+                <div class="popup-row"> <span> Categoria: </span> <input type="text" id="popup_category"> </div>
+                <div class="popup-row"> <span> Data Inicio: </span> <input type="date" id="popup_startDate"> </div>
+                <div class="popup-row"> <span> Data Fim: </span> <input type="date" id="popup_endDate"> </div>
 
-            <button class="popup-button" id="popup_edit"> Editar </button> <button class="popup-button" id="popup_add" onclick="addStrike()"> Adicionar </button>
-        </form>
-    </div>
+                <button class="popup-button" id="popup_edit"> Editar </button> <button class="popup-button"
+                    id="popup_add" onclick="addStrike()"> Adicionar </button>
+            </form>
+        </div>
     </div>
 </body>
 <script src="js/index.js"></script>
+
 </html>

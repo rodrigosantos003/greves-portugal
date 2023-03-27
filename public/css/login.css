@@ -15,13 +15,15 @@ body{
     font-size: var(--font-size-base);
     font-family: 'Sono', sans-serif;
     height: 100vh;
+    overflow: scroll;
+    overflow-x: hidden;
     background: #642B73;
     background: -webkit-linear-gradient(to right, #e05215, #bb4411);
     background: linear-gradient(to right, #e05215, #bb4411);
 }
 
 main{
-    overflow: scroll;
+    
     display: flex;
     align-items: center;
     justify-content: center;
