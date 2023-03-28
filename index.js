@@ -23,7 +23,15 @@ app.get("/", (request, response) => {
     })
 
     res.on("end", () => {
-      response.render("index", { greves: JSON.parse(data).greves });
+      var dataFormatted = JSON.parse(data).greves.map((greve) => {
+        start_dateFormatted = new Date(greve.start_date).toLocaleDateString().split("/")
+        end_dateFormatted = new Date(greve.end_date).toLocaleDateString().split("/")
+        return ({...greve, 
+          start_date: `${start_dateFormatted[0]}/${start_dateFormatted[1]}/${start_dateFormatted[2]}`,
+          end_date: `${end_dateFormatted[0]}/${end_dateFormatted[1]}/${end_dateFormatted[2]}`}
+          )})
+      
+      response.render("index", { greves: dataFormatted });
     })
   })
 });
