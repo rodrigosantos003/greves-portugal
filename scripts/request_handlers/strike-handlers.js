@@ -1,35 +1,16 @@
 const mysql = require("mysql2");
 const mysqlPool = require("../mysql-pool");
 
+/**
+ * Retrieves all strikes from the datababse
+ * @param {*} request 
+ * @param {*} response 
+ */
 function getStrikes(request, response) {
   mysqlPool.query(mysql.format("select * from strike"), (err, rows) => {
     if (err) response.json({ message: "Ocorreu um erro.", error: err.stack });
     else response.json({ greves: rows });
   });
-}
-
-function getStrikesByCategory(request, response) {
-  var category = request.params.category;
-
-  if (category) {
-    mysqlPool.query(
-      mysql.format("select * from strike where category = ?", [category]),
-      (err, rows) => {
-        if (err)
-          response.json({ message: "Ocorreu um erro.", error: err.stack });
-        else if (rows.length) {
-          response.json({
-            message: "Greves obtidas com sucesso.",
-            greves: rows,
-          });
-        } else {
-          response.json({message: "Não existe nenhuma greve com a categoria fornecida"})
-        }
-      }
-    );
-  } else {
-    response.status(400).json({ message: "A categoria não foi especificada" });
-  }
 }
 
 function getStrikeById(request, response) {
@@ -56,6 +37,11 @@ function getStrikeById(request, response) {
   }
 }
 
+/**
+ * Inserts a strike on the database
+ * @param {*} request 
+ * @param {*} response 
+ */
 function insertStrike(request, response) {
   var category = request.body.category;
   var startDate = request.body.startDate;
@@ -91,6 +77,11 @@ function insertStrike(request, response) {
   }
 }
 
+/**
+ * Updated a strike on the databse
+ * @param {*} request 
+ * @param {*} response 
+ */
 function updateStrike(request, response) {
   var id = request.params.id;
   var category = request.body.category;
@@ -127,7 +118,12 @@ function updateStrike(request, response) {
       .json({ message: "Os campos não estão todos preenchidos." });
   }
 }
-
+ 
+/**
+ * Deletes a strike on the database
+ * @param {*} request 
+ * @param {*} response 
+ */
 function deleteStrike(request, response) {
   var id = request.params.id;
 
@@ -146,7 +142,6 @@ function deleteStrike(request, response) {
 }
 
 module.exports.getStrikes = getStrikes;
-module.exports.getStrikesByCategory = getStrikesByCategory;
 module.exports.getStrikeById = getStrikeById;
 module.exports.insertStrike = insertStrike;
 module.exports.updateStrike = updateStrike;

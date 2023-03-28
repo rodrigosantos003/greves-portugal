@@ -91,8 +91,7 @@ function login(request, response) {
                 user: rows,
               });
             } else {
-              response.json({ message: "Password incorreta." });
-              done(null, false, { message: "Password incorreta." });
+              response.status(401).json({ message: "Password incorreta." });
             }
           });
         }
