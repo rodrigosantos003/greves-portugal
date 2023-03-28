@@ -1,3 +1,26 @@
+window.onload = function () {
+  const els = document.getElementsByClassName("needsAdmin");
+
+  if (sessionStorage.getItem("loggedUser")) {
+    Array.prototype.forEach.call(
+      els,
+      (element) => (element.style.display = "display")
+    );
+
+    let loginLink = document.getElementById("login-link")
+    loginLink.innerHTML = "Sair"
+  } else {
+    Array.prototype.forEach.call(
+      els,
+      (element) => (element.style.display = "none")
+    );
+  }
+}
+
+if (location.href == "http://localhost:8081/login" || location.href == "http://localhost:8081/registo") {
+  sessionStorage.clear()
+}
+
 /**
  * Função de registo de users
  */
@@ -49,6 +72,7 @@ function loginUser() {
         var response = JSON.parse(this.responseText)
         if (this.status === 200) {
           alert("Sessão iniciada com sucesso")
+          sessionStorage.setItem("loggedUser", JSON.stringify(response.user[0]))
           window.open("/", "_self")
         } else {
           alert(`Ocorreu um erro: ${response.message}`);
@@ -66,12 +90,7 @@ function showStrikes() {
   document.getElementsByClassName("container")[0].style.display = "flex"
 }
 
-const els = document.getElementsByClassName("needsAdmin");
 
-Array.prototype.forEach.call(
-  els,
-  (element) => (element.style.display = "display")
-);
 
 function closePopUp() {
   document.getElementById("popup_allpage").style.display = "none";
