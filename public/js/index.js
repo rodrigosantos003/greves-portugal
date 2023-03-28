@@ -90,8 +90,6 @@ function showStrikes() {
   document.getElementsByClassName("container")[0].style.display = "flex"
 }
 
-
-
 function closePopUp() {
   document.getElementById("popup_allpage").style.display = "none";
 }
