@@ -17,11 +17,14 @@ function getStrikesByCategory(request, response) {
       (err, rows) => {
         if (err)
           response.json({ message: "Ocorreu um erro.", error: err.stack });
-        else if (rows.length)
+        else if (rows.length) {
           response.json({
             message: "Greves obtidas com sucesso.",
             greves: rows,
           });
+        } else {
+          response.json({message: "Não existe nenhuma greve com a categoria fornecida"})
+        }
       }
     );
   } else {
@@ -38,11 +41,14 @@ function getStrikeById(request, response) {
       (err, rows) => {
         if (err)
           response.json({ message: "Ocorreu um erro.", error: err.stack });
-        else if (rows.length)
+        else if (rows.length) {
           response.json({
             message: "Greve obtida com sucesso.",
             greve: rows,
           });
+        } else {
+          response.json({message: "Não existe nenhuma greve com o id fornecido"})
+        }
       }
     );
   } else {

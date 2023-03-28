@@ -43,9 +43,9 @@ app.post("/api/login", userHandlers.login);
 /*STRIKES*/
 app.get("/api/strike", strikeHandlers.getStrikes);
 
-app.get("/api/strike/:category", strikeHandlers.getStrikesByCategory);
-
 app.get("/api/strike/:id", strikeHandlers.getStrikeById);
+
+app.get("/api/strike/category/:category", strikeHandlers.getStrikesByCategory);
 
 app.post("/api/strike", strikeHandlers.insertStrike);
 
