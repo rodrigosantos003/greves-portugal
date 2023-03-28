@@ -31,11 +31,16 @@ function registerUser() {
   }
 }
 
+/**
+ * Função de login de users
+ */
 function loginUser() {
+  //Obter valores do formulario
   var email = document.getElementById("login-email").value;
   var password = document.getElementById("login-password").value;
 
   if (email && password) {
+    //Pedido ao servidor utilziado AJAX
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/login")
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -52,6 +57,13 @@ function loginUser() {
     }
     xhr.send(JSON.stringify({ email, password }))
   }
+}
+
+/**
+ * Função para mostrar todas as greves
+ */
+function showStrikes() {
+  document.getElementsByClassName("container")[0].style.display = "flex"
 }
 
 const els = document.getElementsByClassName("needsAdmin");
@@ -74,16 +86,14 @@ function openPopUp(type, id) {
   const startDateField = document.getElementById("popup_startDate");
   const endDateField = document.getElementById("popup_endDate");
 
-  console.log("foi executado")
-
   switch(type){
     case "edit":
       document.getElementById("popup_edit").style.display = "block"
       document.getElementById("popup_add").style.display = "none"
       
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", "/api/strike/:id")
-      xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xhr.open("GET", `/api/strike/${id}`)
+      //xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       xhr.onreadystatechange = function () {
         if (this.readyState === 4) {
           var response = JSON.parse(this.responseText)
@@ -95,8 +105,8 @@ function openPopUp(type, id) {
           }
         }
       }
-      xhr.send(JSON.stringify(id))
-      break
+      xhr.send();
+      break;
 
     case "add":
       document.getElementById("popup_edit").style.display = "none"

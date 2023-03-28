@@ -14,10 +14,10 @@
     {{>navbar}}
 
     <h1 class="title"> Outra vez em greve? </h1>
-    <div class="button-container"> <button class="refreshbtn"> ? </button> <button class="addbtn needsAdmin"
-            onclick="openPopUp('add')"> + </button> </div>
+    <div class="button-container"> <button class="refreshbtn" onclick="showStrikes()"> 🤔 </button> <button
+            class="addbtn needsAdmin" onclick="openPopUp('add')"> + </button> </div>
 
-    <div class="container">
+    <div class="container" id="list-greves">
 
         {{#greves}}
         <div class="card">
