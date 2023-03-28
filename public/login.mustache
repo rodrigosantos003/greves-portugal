@@ -8,6 +8,7 @@
     <title>GrevesPortugal - Login</title>
     <link rel="stylesheet" href="./css/index.css">
     <link rel="stylesheet" href="./css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
 </head>
 
 <body>
@@ -18,11 +19,9 @@
             <h1> LOGIN </h1>
 
             <input type="email" id="login-email" class="textbox username" placeholder="Email">
-            <input type="password" id="login-password"" class="textbox password" placeholder="Password">
-
-            <div class="showpassword-container">
-                <input type="checkbox" name="" class="checkbox" id="showPassword">
-                <label for="showPassword" class="label"> Mostrar Password </label>
+            <div class="password-container">
+                    <input type="password" class="textbox" id="password" placeholder="Password">
+                    <i class="far fa-eye" onclick="togglePassword('password')"></i>
             </div>
             <button class="login" onclick="loginUser()" type="button"> Entrar </button>
         </form>

@@ -14,19 +14,17 @@
 body{
     font-size: var(--font-size-base);
     font-family: 'Sono', sans-serif;
-    overflow: scroll;
-    overflow-x: hidden;
-    height: 100vh;
-    background: #642B73;
+    background-color: #bb4411;
     background: -webkit-linear-gradient(to right, #e05215, #bb4411);
     background: linear-gradient(to right, #e05215, #bb4411);
+    overflow: hidden;
 }
 
 main{
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    height: calc(100vh - 90px);
 }
 
 .main-content{
@@ -43,19 +41,22 @@ main{
 h1 {
     font-size: var(--font-size-xl);
     margin-top: 2vh;
-    margin-bottom: 4vh;
 }
 
-.showpassword-container{
-    display: flex;
-    gap: 0.3rem;
+.password-container{
     padding-top: 7px;
-    width: 66%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    position: relative;
 }
 
-.label{
-    font-size: var(--font-size-sm);
-    user-select: none;
+.password-container > i{
+    color:black;
+    position: absolute;
+    left:74%;
+    bottom:15%;
+    cursor: pointer;
 }
 
 .textbox{
@@ -77,5 +78,5 @@ h1 {
     width: 65%;
     padding: 10px;
     cursor: pointer;
-    margin-top: 90px;
+    margin-top: 4vh;
 }

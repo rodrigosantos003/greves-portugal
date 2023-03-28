@@ -236,3 +236,10 @@ function formatDate(date) {
   var formattedStartDate = new Date(date).toLocaleDateString().split("/")
   return `${formattedStartDate[2]}-${formattedStartDate[1]}-${formattedStartDate[0]}`
 }
+
+function togglePassword(passwordField){
+  password = document.getElementById(passwordField)
+  const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+  password.setAttribute('type', type);
+  this.classList.toggle('fa-eye-slash');
+}
