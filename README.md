@@ -19,5 +19,3 @@
 
 - npm install
 - npm run dev OR npm start
-
-## To rapidly test the API on Postman, load the [collection](./projeto_pis.postman_collection.json)

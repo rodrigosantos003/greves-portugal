@@ -79,7 +79,7 @@ function login(request, response) {
         if (err)
           response.json({ message: "Ocorreu um erro", error: err.stack });
         else if (!rows.length)
-          response.json({ message: "Utilizador não encontrado." });
+          response.status(401).json({ message: "Utilizador não encontrado." });
         else {
           bcrypt.compare(password, rows[0].password, (err, result) => {
             if (err) {
