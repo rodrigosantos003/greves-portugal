@@ -13,6 +13,7 @@ app.engine("mustache", mustacheExpress());
 app.set("view engine", "mustache");
 app.set("views", __dirname + "/public");
 
+/* PAGES */
 app.get("/", (request, response) => {
   http.get("http://localhost:8081/api/strike", (res) => {
     let data = "";
@@ -44,8 +45,6 @@ app.post("/api/login", userHandlers.login);
 app.get("/api/strike", strikeHandlers.getStrikes);
 
 app.get("/api/strike/:id", strikeHandlers.getStrikeById);
-
-app.get("/api/strike/category/:category", strikeHandlers.getStrikesByCategory);
 
 app.post("/api/strike", strikeHandlers.insertStrike);
 
