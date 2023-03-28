@@ -93,19 +93,28 @@ function openPopUp(type, id) {
       
       var xhr = new XMLHttpRequest();
       xhr.open("GET", `/api/strike/${id}`)
-      //xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       xhr.onreadystatechange = function () {
         if (this.readyState === 4) {
           var response = JSON.parse(this.responseText)
-          console.log(response)
           if (this.status === 200) {
-            descricaoField.value = "a"
+            var greve = response.greve[0]
+
+            descricaoField.value = greve.description
+            categoryField.value = greve.category
+            startDateField.value = formatDate(greve.start_date)
+            endDateField.value = formatDate(greve.end_date)
+
           } else {
             alert(`Ocorreu um erro: ${response.message}`);
           }
         }
       }
       xhr.send();
+
+      document.getElementById("popup_edit").addEventListener("click", function () {
+        updateStrike(id)
+      })
+
       break;
 
     case "add":
@@ -115,6 +124,41 @@ function openPopUp(type, id) {
   }
 }
 
+/**
+ * Função para atualizar uma greve
+ * @param {int} id ID da greve a atualizar
+ */
+function updateStrike(id) {
+  var description = document.getElementById("popup_description").value;
+  var category = document.getElementById("popup_category").value;
+  var startDate = document.getElementById("popup_startDate").value;
+  var endDate = document.getElementById("popup_endDate").value;
+
+  if (description && category && startDate && endDate) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("PUT", `/api/strike/${id}`);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.onreadystatechange = function () {
+      if (this.readyState === 4) {
+        var response = JSON.parse(this.responseText);
+        if (this.status === 200) {
+          alert("Greve atualizada com sucesso!");
+        } else if (this.status === 400) {
+          alert("Preencha todos os campos!");
+        } else {
+          alert(`Ocorreu um erro: ${response.message}`);
+        }
+      }
+    };
+    xhr.send(JSON.stringify({ description, category, startDate, endDate}));
+  } else {
+    alert("Preencha todos os campos");
+  }
+}
+
+/**
+ * Função para adicionar uma greve
+ */
 function addStrike(){
   var description = document.getElementById("popup_description").value;
   var category = document.getElementById("popup_category").value;
@@ -128,7 +172,6 @@ function addStrike(){
     xhr.onreadystatechange = function () {
       if (this.readyState === 4) {
         var response = JSON.parse(this.responseText);
-        window.alert(JSON.stringify(response))
         if (this.status === 200) {
           alert("Greve criada com sucesso!");
         } else if (this.status === 400) {
@@ -144,6 +187,33 @@ function addStrike(){
   }
 }
 
+/**
+ * Função para eliminar uma greve
+ * @param {int} id ID da greve a eliminar
+ */
 function deleteStrike(id){
+  var xhr = new XMLHttpRequest();
+  xhr.open("DELETE", `/api/strike/${id}`)
+  xhr.onreadystatechange = function () {
+    if (this.readyState === 4) {
+      var response = JSON.parse(this.responseText)
+      if (this.status === 200) {
+        alert("Greve eliminada com sucesso!")
+        location.reload()
+      } else {
+        alert(`Ocorreu um erro: ${response.message}`);
+      }
+    }
+  }
+  xhr.send();
+}
 
+/**
+ * Função para formatar datas
+ * @param {string} date Data a formatar
+ * @returns Data formatada
+ */
+function formatDate(date) {
+  var formattedStartDate = new Date(date).toLocaleDateString().split("/")
+  return `${formattedStartDate[2]}-${formattedStartDate[1]}-${formattedStartDate[0]}`
 }

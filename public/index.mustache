@@ -17,7 +17,7 @@
     <div class="button-container"> <button class="refreshbtn" onclick="showStrikes()"> 🤔 </button> <button
             class="addbtn needsAdmin" onclick="openPopUp('add')"> + </button> </div>
 
-    <div class="container" id="list-greves">
+    <div class="container">
 
         {{#greves}}
         <div class="card">
@@ -40,8 +40,8 @@
                 <div class="popup-row"> <span> Data Inicio: </span> <input type="date" id="popup_startDate"> </div>
                 <div class="popup-row"> <span> Data Fim: </span> <input type="date" id="popup_endDate"> </div>
 
-                <button class="popup-button" id="popup_edit"> Editar </button> <button class="popup-button"
-                    id="popup_add" onclick="addStrike()"> Adicionar </button>
+                <button class="popup-button" id="popup_edit"> Editar </button>
+                <button class="popup-button" id="popup_add" onclick="addStrike()"> Adicionar </button>
             </form>
         </div>
     </div>
