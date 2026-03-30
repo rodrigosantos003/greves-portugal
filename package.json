@@ -16,5 +16,6 @@
     "http": "0.0.1-security",
     "mustache-express": "^1.3.2",
     "mysql2": ">=3.9.8"
-  }
+  },
+  "devDependencies": {}
 }

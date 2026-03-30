@@ -1,0 +1,30 @@
+{
+  "name": "portugal-strikes-scraper",
+  "version": "1.0.0",
+  "description": "Scraper service for Portuguese strikes",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "scrape": "node dist/index.js --run-once",
+    "dev": "ts-node --esm src/index.ts",
+    "dev:watch": "nodemon --exec ts-node --esm src/index.ts"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "mongoose": "^8.0.0",
+    "node-cron": "^3.0.3",
+    "puppeteer": "^22.0.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.0.0",
+    "@types/node-cron": "^3.0.11",
+    "dotenv": "^16.4.0",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}
