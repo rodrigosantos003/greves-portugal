@@ -32,10 +32,10 @@ function App() {
         <div className="gp-list">
           {isLoading ? (
             <p className="gp-empty">A carregar...</p>
-          ) : strikes.length === 0 ? (
+          ) : strikes?.data?.length === 0 ? (
             <p className="gp-empty">Sem greves registadas para hoje.</p>
           ) : (
-            strikes.map((s: Strike, i: number) => (
+            strikes.data.map((s: Strike, i: number) => (
               <StrikeCard key={s.id} strike={s} idx={i} />
             ))
           )}
