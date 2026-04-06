@@ -1,10 +1,10 @@
 import "dotenv/config";
 import puppeteer, { type Browser } from "puppeteer";
 import cron from "node-cron";
-import { connectDB, disconnectDB } from "./libs/connection.js";
-import { runAllScrapers } from "./libs/scraper.js";
-import logger from "./libs/logger.js";
-import type { ScrapeSummary } from "./types/types.js";
+import { connectDB, disconnectDB } from "@/libs/connection";
+import { runAllScrapers } from "@/libs/scraper";
+import logger from "@/libs/logger";
+import { ScrapeSummary } from "@/models/strike.model";
 
 const CRON_SCHEDULE = process.env.SCRAPE_INTERVAL_CRON ?? "0 6,12,18 * * *";
 const RUN_ONCE = process.argv.includes("--run-once");

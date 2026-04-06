@@ -8,17 +8,19 @@
     "start": "node dist/index.js",
     "scrape": "node dist/index.js --run-once",
     "dev": "ts-node --esm src/index.ts",
-    "dev:watch": "nodemon --exec ts-node --esm src/index.ts"
+    "dev:watch": "nodemon --exec ts-node --esm src/index.ts",
+    "serve": "ts-node --esm src/server.ts",
+    "serve:watch": "nodemon --exec ts-node --esm src/server.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
+    "express": "^5.1.0",
     "mongoose": "^8.0.0",
     "node-cron": "^3.0.3",
     "puppeteer": "^22.0.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.35",
     "@types/express": "^5.0.6",
     "@types/node": "^20.0.0",
     "@types/node-cron": "^3.0.11",

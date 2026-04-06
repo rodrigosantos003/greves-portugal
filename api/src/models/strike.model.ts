@@ -1,5 +1,25 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
-import type { StrikeSource } from '../types.js';
+import mongoose, { Document, Model, Schema } from "mongoose";
+
+export type StrikeSource = "publico" | "jornalnoticias" | "observador" | "lusa";
+
+export interface ScrapedStrike {
+  title: string;
+  description: string;
+  source: StrikeSource;
+  url: string;
+  strikeDates: Date[];
+  sector: string;
+  workers: string | null;
+  confirmed: boolean;
+}
+
+export interface ScrapeSummary {
+  durationSeconds: string;
+  total: number;
+  withDates: number;
+  upserted: number;
+  errors: number;
+}
 
 export interface IStrike extends Document {
   title: string;
@@ -29,7 +49,12 @@ const strikeSchema = new Schema<IStrike>(
     source: {
       type: String,
       required: true,
-      enum: ['dgert', 'publico', 'jornalnoticias', 'observador', 'lusa'] satisfies StrikeSource[],
+      enum: [
+        "publico",
+        "jornalnoticias",
+        "observador",
+        "lusa",
+      ] satisfies StrikeSource[],
     },
     url: {
       type: String,
@@ -68,6 +93,9 @@ strikeSchema.index({ url: 1 }, { unique: true });
 // Fast lookup by date range + confirmation status
 strikeSchema.index({ strikeDates: 1, confirmed: 1 });
 
-const Strike: Model<IStrike> = mongoose.model<IStrike>('Strike', strikeSchema);
+export const Strike: Model<IStrike> = mongoose.model<IStrike>(
+  "Strike",
+  strikeSchema,
+);
 
 export default Strike;

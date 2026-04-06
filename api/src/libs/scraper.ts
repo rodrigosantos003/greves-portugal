@@ -1,7 +1,7 @@
 import type { Browser } from "puppeteer";
-import Strike from "./Strike";
+import { Strike } from "@/models/strike.model";
 import logger from "./logger";
-import type { ScrapedStrike, ScrapeSummary } from "../types/types";
+import type { ScrapedStrike, ScrapeSummary } from "@/models/strike.model";
 import { scrapePUBLICO, scrapeJN } from "./news";
 
 /**

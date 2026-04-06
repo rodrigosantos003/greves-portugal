@@ -2,8 +2,7 @@ import mongoose from "mongoose";
 import logger from "./logger";
 
 export async function connectDB(): Promise<void> {
-  const uri =
-    process.env.MONGODB_URI ?? "mongodb://localhost:27017/portugal_strikes";
+  const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}`;
 
   mongoose.connection.on("connected", () => logger.info("MongoDB connected"));
   mongoose.connection.on("error", (err: Error) =>
