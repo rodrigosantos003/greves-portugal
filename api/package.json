@@ -4,13 +4,10 @@
   "description": "Scraper service for Portuguese strikes",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "scrape": "node dist/index.js --run-once",
-    "dev": "ts-node --esm src/index.ts",
-    "dev:watch": "nodemon --exec ts-node --esm src/index.ts",
-    "serve": "ts-node --esm src/server.ts",
-    "serve:watch": "nodemon --exec ts-node --esm src/server.ts"
+    "build": "tsc && tsc-alias",
+    "start": "tsx src/index.ts",
+    "scrape": "tsx src/index.ts --run-once",
+    "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
@@ -18,6 +15,8 @@
     "mongoose": "^8.0.0",
     "node-cron": "^3.0.3",
     "puppeteer": "^22.0.0",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.21.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
@@ -25,7 +24,6 @@
     "@types/node": "^20.0.0",
     "@types/node-cron": "^3.0.11",
     "dotenv": "^16.4.0",
-    "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
   }
