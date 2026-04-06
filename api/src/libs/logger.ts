@@ -1,20 +1,20 @@
-import { createLogger, format, transports } from 'winston';
+type LogMethod = (message: string, meta?: Record<string, unknown>) => void;
 
-const logger = createLogger({
-  level: process.env.LOG_LEVEL ?? 'info',
-  format: format.combine(
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    format.errors({ stack: true }),
-    format.printf(({ timestamp, level, message, ...meta }) => {
-      const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-      return `[${timestamp as string}] ${level.toUpperCase()}: ${message as string}${metaStr}`;
-    }),
-  ),
-  transports: [
-    new transports.Console(),
-    new transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new transports.File({ filename: 'logs/combined.log' }),
-  ],
-});
+function formatMeta(meta?: Record<string, unknown>) {
+  if (!meta || Object.keys(meta).length === 0) return undefined;
+  return meta;
+}
+
+const logger: {
+  debug: LogMethod;
+  info: LogMethod;
+  warn: LogMethod;
+  error: LogMethod;
+} = {
+  debug: (message, meta) => console.debug(message, formatMeta(meta)),
+  info: (message, meta) => console.info(message, formatMeta(meta)),
+  warn: (message, meta) => console.warn(message, formatMeta(meta)),
+  error: (message, meta) => console.error(message, formatMeta(meta)),
+};
 
 export default logger;
