@@ -7,6 +7,7 @@ import setupRoutes from "./routes";
 const app = express();
 app.use(express.json());
 
+app.use("/api");
 setupRoutes(app);
 
 const port = Number(process.env.PORT ?? 3000);
