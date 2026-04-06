@@ -1,8 +1,10 @@
 {
-  "name": "greves-portugal",
+  "name": "greves-portugal-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Frontend for Greves Portugal",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -10,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.96.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },

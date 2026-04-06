@@ -3,9 +3,17 @@ import express from "express";
 import { connectDB, disconnectDB } from "@/libs/connection";
 import logger from "@/libs/logger";
 import setupRoutes from "./routes";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 setupRoutes(app);
 

@@ -1,15 +1,15 @@
 {
-  "name": "pis-project",
+  "name": "greves-portugal",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Greves Portugal",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
-  },
-  "author": "Rodrigo Santos",
-  "license": "ISC",
-  "dependencies": {},
-  "devDependencies": {}
+    "install:frontend": "cd frontend && npm install",
+    "install:api": "cd api && npm install",
+    "build:frontend": "cd frontend && npm run build",
+    "build:api": "cd api && npm run build",
+    "start:frontend": "cd frontend && npm run start",
+    "start:api": "cd api && npm run start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:api": "cd api && npm run dev"
+  }
 }

@@ -1,8 +1,8 @@
 {
-  "name": "portugal-strikes-scraper",
+  "name": "greves-portugal-api",
   "version": "1.0.0",
-  "description": "Scraper service for Portuguese strikes",
-  "main": "dist/index.js",
+  "description": "API for Greves Portugal",
+  "license": "MIT",
   "scripts": {
     "build": "tsc && tsc-alias",
     "start": "tsx src/index.ts",
@@ -10,7 +10,9 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
+    "@types/cors": "^2.8.19",
     "cheerio": "^1.0.0",
+    "cors": "^2.8.6",
     "express": "^5.1.0",
     "mongoose": "^8.0.0",
     "node-cron": "^3.0.3",

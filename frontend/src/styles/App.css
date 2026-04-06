@@ -7,11 +7,10 @@
 }
 body {
   font-family: "Sono", sans-serif;
-  background: transparent;
+  background: #eaebeb;
 }
 #root {
   min-height: 500px;
-  background: #eaebeb;
   padding-bottom: 2rem;
 }
 
