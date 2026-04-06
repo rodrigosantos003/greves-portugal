@@ -9,22 +9,7 @@ export type Strike = {
   end_date: string;
 };
 
-const SAMPLE: Strike[] = [
-  {
-    id: 1,
-    description: "Greve dos motoristas de autocarro",
-    category: "Transportes",
-    start_date: "2026-03-29",
-    end_date: "2026-03-30",
-  },
-  {
-    id: 2,
-    description: "Paralisação dos enfersmeiros do SNS",
-    category: "Saúde",
-    start_date: "2026-03-29",
-    end_date: "2026-03-29",
-  },
-];
+const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 function formatDate(d: string) {
   if (!d) return "—";
@@ -51,7 +36,10 @@ function App() {
   const [visible, setVisible] = useState(false);
 
   const loadStrikes = () => {
-    setStrikes(SAMPLE);
+    fetch(`${BASE_URL}/strikes`)
+      .then((res) => res.json())
+      .then((data) => setStrikes(data.data as Strike[]))
+      .catch((err) => console.error(err));
     setVisible(true);
   };
 
