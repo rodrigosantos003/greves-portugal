@@ -32,3 +32,5 @@ start().catch((err: Error) => {
   logger.error("API fatal error", { err: err.message });
   process.exit(1);
 });
+
+export default app;
