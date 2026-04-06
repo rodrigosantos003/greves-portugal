@@ -29,7 +29,7 @@ async function main(): Promise<void> {
     logger.info("Running in one-shot mode (--run-once)");
     try {
       const summary = await scrapeWithBrowser();
-      logger.info("Done", summary);
+      logger.info("Done", { summary });
     } finally {
       await disconnectDB();
     }

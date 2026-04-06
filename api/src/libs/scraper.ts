@@ -75,6 +75,6 @@ export async function runAllScrapers(browser: Browser): Promise<ScrapeSummary> {
     errors,
   };
 
-  logger.info("Scrape run complete", summary);
+  logger.info("Scrape run complete", { summary });
   return summary;
 }
