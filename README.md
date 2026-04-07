@@ -1,21 +1,14 @@
-# pis-project
+# Greves Portugal
 
-## To run this project please follow the instructions below
+Platform to view the current strikes in Portugal
 
-1. Create a MySQL database on your root user, using the "create.sql" file, located on the [database](./database/) folder
-2. Create a "connection-options.json" file on the [scripts](./scripts/) folder with the following content:
+## Tech Stack
 
-```
-{
-  "host": "localhost",
-  "user": "root",
-  "password": <YOUR ROOT PASSWORD>,
-  "database": <DATABASE NAME>,
-  "port": 3306
-}
-```
+- React (Vite)
+- Node.js
+- MongoDB
 
-3. Run the commands:
+## URLs
 
-- npm install
-- npm run dev OR npm start
+- [Site](https://greves-portugal.vercel.app)
+- [API](https://api-greves-portugal.vercel.app)
