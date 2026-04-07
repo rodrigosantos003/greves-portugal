@@ -2,14 +2,15 @@
   "name": "greves-portugal",
   "version": "1.0.0",
   "description": "Greves Portugal",
+  "license": "MIT",
   "scripts": {
-    "install:frontend": "cd frontend && npm install",
-    "install:api": "cd api && npm install",
-    "build:frontend": "cd frontend && npm run build",
-    "build:api": "cd api && npm run build",
-    "start:frontend": "cd frontend && npm run start",
-    "start:api": "cd api && npm run start",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev:api": "cd api && npm run dev"
+    "install:frontend": "cd frontend && yarn install",
+    "install:api": "cd api && yarn install",
+    "build:frontend": "cd frontend && yarn run build",
+    "build:api": "cd api && yarn run build",
+    "start:frontend": "cd frontend && yarn run start",
+    "start:api": "cd api && yarn run start",
+    "dev:frontend": "cd frontend && yarn run dev",
+    "dev:api": "cd api && yarn run dev"
   }
 }
