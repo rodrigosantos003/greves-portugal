@@ -1,7 +1,7 @@
 import * as cheerio from "cheerio";
 import type { Browser } from "puppeteer";
 import logger from "./logger";
-import { extractDatesFromText } from "./dateParser";
+import { extractDatesFromText, keepTodayAndFutureDates } from "./dateParser";
 import type { ScrapedStrike, StrikeSource } from "../models/strike.model";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
@@ -38,13 +38,22 @@ function classifySector(text: string): string {
   return "Outros";
 }
 
-async function fetchPage(browser: Browser, url: string): Promise<string> {
+async function fetchPage(
+  browser: Browser,
+  url: string,
+  waitForSelector?: string,
+): Promise<string> {
   const page = await browser.newPage();
   await page.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
   );
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
+    if (waitForSelector) {
+      await page
+        .waitForSelector(waitForSelector, { timeout: 15_000 })
+        .catch(() => undefined);
+    }
     return await page.content();
   } finally {
     await page.close();
@@ -58,6 +67,20 @@ interface ParsedArticle {
   dateText: string;
 }
 
+function normalizeGoogleRedirectUrl(raw: string): string {
+  try {
+    // Google CSE often returns https://www.google.com/url?...&q=<realUrl>
+    const u = new URL(raw);
+    if (u.hostname.includes("google.") && u.pathname === "/url") {
+      const q = u.searchParams.get("q");
+      if (q && /^https?:\/\//i.test(q)) return q;
+    }
+  } catch {
+    // ignore
+  }
+  return raw;
+}
+
 function parseArticleCards(
   $: cheerio.CheerioAPI,
   selector: string,
@@ -67,9 +90,32 @@ function parseArticleCards(
 
   $(selector).each((_, el) => {
     const item = $(el);
-    const title = item.find("h2, h3, .title, .headline").first().text().trim();
-    const snippet = item.find("p, .lead, .summary").first().text().trim();
-    const href = item.find("a").first().attr("href");
+    // Supports both site-native cards and Google CSE blocks (gsc-webResult)
+    const title =
+      item
+        .find(
+          "a.gs-title, .gs-title a, h2 a, h3 a, h2, h3, .title, .headline a",
+        )
+        .first()
+        .text()
+        .trim() || "";
+    const snippet = (
+      item.find(".gs-snippet, p, .lead, .summary").first().text().trim() || ""
+    ).replace(/\s+/g, " ");
+
+    const linkEl =
+      item.find("a.gs-title").first().length > 0
+        ? item.find("a.gs-title").first()
+        : item.find("a").first();
+
+    const hrefRaw =
+      linkEl.attr("data-ctorig") ??
+      linkEl.attr("data-ctorig") ??
+      linkEl.attr("href") ??
+      item.find("a.gs-image").first().attr("data-ctorig") ??
+      item.find("a.gs-image").first().attr("href");
+
+    const href = hrefRaw ? normalizeGoogleRedirectUrl(hrefRaw) : undefined;
     const dateText =
       item.find("time, .date").first().attr("datetime") ??
       item.find("time, .date").first().text().trim();
@@ -95,7 +141,9 @@ function articlesToStrikes(
 ): ScrapedStrike[] {
   return articles.map(({ title, snippet, href, dateText }) => {
     const fullText = `${title} ${snippet}`;
-    const strikeDates = extractDatesFromText(`${fullText} ${dateText}`);
+    const strikeDates = keepTodayAndFutureDates(
+      extractDatesFromText(`${fullText} ${dateText}`),
+    );
 
     return {
       title,
@@ -110,58 +158,43 @@ function articlesToStrikes(
   });
 }
 
-// ─── Público ──────────────────────────────────────────────────────────────────
-
-const PUBLICO_SEARCH = "https://www.publico.pt/pesquisa/greve";
+const OBSERVADOR_SEARCH = "https://observador.pt/pesquisa/?q=greve";
 
 /**
- * Scrapes Público's search results for "greve".
+ * Scrapes Observador's search results for "greve".
  */
-export async function scrapePUBLICO(
+export async function scrapeOBSERVADOR(
   browser: Browser,
 ): Promise<ScrapedStrike[]> {
-  logger.info("Scraping Público...", { url: PUBLICO_SEARCH });
+  logger.info("Scraping Observador...", { url: OBSERVADOR_SEARCH });
 
   try {
-    const html = await fetchPage(browser, PUBLICO_SEARCH);
+    const html = await fetchPage(browser, OBSERVADOR_SEARCH, ".gsc-webResult");
     const $ = cheerio.load(html);
     const articles = parseArticleCards(
       $,
-      "article, li.card, .search-results__item",
-      "https://www.publico.pt",
+      // Observador search frequently renders via Google CSE blocks
+      ".gsc-webResult, .gsc-result, article, .article-item, .search-item",
+      "https://observador.pt",
     );
-    const results = articlesToStrikes(articles, "publico");
-    logger.info(`Público: found ${results.length} strike articles`);
+    const filtered = articles.filter(
+      (a) => !`${a.title} ${a.snippet}`.toLowerCase().includes("opinião"),
+    );
+    const currentYear = new Date().getFullYear();
+    const yearFiltered = filtered.filter((a) => {
+      const text = `${a.title} ${a.snippet}`.toLowerCase();
+      const years = [...text.matchAll(/\b(20\d{2})\b/g)].map((m) =>
+        Number(m[1]),
+      );
+      if (years.length === 0) return true;
+      return years.every((y) => y === currentYear);
+    });
+
+    const results = articlesToStrikes(yearFiltered, "observador");
+    logger.info(`Observador: found ${results.length} strike articles`);
     return results;
   } catch (err) {
-    logger.error("Público scraping failed", { err: (err as Error).message });
-    return [];
-  }
-}
-
-// ─── Jornal de Notícias ───────────────────────────────────────────────────────
-
-const JN_SEARCH = "https://www.jn.pt/pesquisa/?query=greve";
-
-/**
- * Scrapes Jornal de Notícias search results for "greve".
- */
-export async function scrapeJN(browser: Browser): Promise<ScrapedStrike[]> {
-  logger.info("Scraping Jornal de Notícias...", { url: JN_SEARCH });
-
-  try {
-    const html = await fetchPage(browser, JN_SEARCH);
-    const $ = cheerio.load(html);
-    const articles = parseArticleCards(
-      $,
-      "article, .article-item, .search-item",
-      "https://www.jn.pt",
-    );
-    const results = articlesToStrikes(articles, "jornalnoticias");
-    logger.info(`JN: found ${results.length} strike articles`);
-    return results;
-  } catch (err) {
-    logger.error("JN scraping failed", { err: (err as Error).message });
+    logger.error("Observador scraping failed", { err: (err as Error).message });
     return [];
   }
 }

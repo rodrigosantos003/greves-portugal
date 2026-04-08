@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./styles/App.css";
-import { getStrikes } from "./lib/api";
+import { getFutureStrikes, getStrikes } from "./lib/api";
 import { StrikeCard } from "./components/Card";
 import { useQuery } from "@tanstack/react-query";
 import type { Strike } from "./types";
@@ -11,6 +11,14 @@ function App() {
   const { data, isLoading } = useQuery({
     queryKey: ["strikes"],
     queryFn: getStrikes,
+    enabled: visible,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    retry: false,
+  });
+
+  const { data: futureData, isLoading: futureIsLoading } = useQuery({
+    queryKey: ["futureStrikes"],
+    queryFn: getFutureStrikes,
     enabled: visible,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
     retry: false,
@@ -43,6 +51,17 @@ function App() {
             ))
           )}
         </div>
+      )}
+
+      {visible && !futureIsLoading && futureData?.strikes && (
+        <>
+          <p>Próximas greves:</p>
+          <div className="gp-list">
+            {futureData.strikes.map((strike: Strike, i: number) => (
+              <StrikeCard key={strike._id} strike={strike} idx={i} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

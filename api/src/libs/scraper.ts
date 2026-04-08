@@ -2,7 +2,8 @@ import type { Browser } from "puppeteer";
 import { Strike } from "@/models/strike.model";
 import logger from "./logger";
 import type { ScrapedStrike, ScrapeSummary } from "@/models/strike.model";
-import { scrapePUBLICO, scrapeJN } from "./news";
+import { scrapeOBSERVADOR } from "./news";
+import { keepTodayAndFutureDates } from "./dateParser";
 
 /**
  * Runs all scrapers in parallel, merges results, and upserts into MongoDB.
@@ -12,20 +13,24 @@ export async function runAllScrapers(browser: Browser): Promise<ScrapeSummary> {
   logger.info("Starting scrape run...");
   const start = Date.now();
 
-  const [publicoResult, jnResult] = await Promise.allSettled([
-    scrapePUBLICO(browser),
-    scrapeJN(browser),
+  const [observadorResult] = await Promise.allSettled([
+    scrapeOBSERVADOR(browser),
   ]);
 
   const allResults: ScrapedStrike[] = [
-    ...(publicoResult.status === "fulfilled" ? publicoResult.value : []),
-    ...(jnResult.status === "fulfilled" ? jnResult.value : []),
+    ...(observadorResult.status === "fulfilled" ? observadorResult.value : []),
   ];
 
   logger.info(`Total raw results: ${allResults.length}`);
 
+  // Keep only today+future dates (Lisbon day) and drop items with none left
+  const normalized = allResults.map((r) => ({
+    ...r,
+    strikeDates: keepTodayAndFutureDates(r.strikeDates),
+  }));
+
   // Filter out entries with no dates (we can't place them on a calendar)
-  const withDates = allResults.filter((r) => r.strikeDates.length > 0);
+  const withDates = normalized.filter((r) => r.strikeDates.length > 0);
   const skipped = allResults.length - withDates.length;
   if (skipped > 0)
     logger.warn(`Skipped ${skipped} entries with no parseable dates`);
@@ -50,7 +55,7 @@ export async function runAllScrapers(browser: Browser): Promise<ScrapeSummary> {
             scrapedAt: new Date(),
           },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true },
+        { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
       );
       upserted++;
     } catch (err) {

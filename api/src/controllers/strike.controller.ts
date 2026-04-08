@@ -29,3 +29,24 @@ export const getCurrentDayStrikes = async (
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const getFutureStrikes = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const startOfToday = dayjs().startOf("day").toDate();
+    const startOfTomorrow = dayjs(startOfToday).add(1, "day").toDate();
+
+    const data = await Strike.find({
+      confirmed: true,
+      strikeDates: {
+        $elemMatch: { $gte: startOfToday, $lt: startOfTomorrow },
+      },
+    }).lean();
+
+    res.json({ strikes: data });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
