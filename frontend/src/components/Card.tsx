@@ -7,9 +7,11 @@ export function StrikeCard({ strike, idx }: { strike: Strike; idx: number }) {
       <div className="gp-card-row1">
         <h2>{strike.description}</h2>
       </div>
-      <span className="gp-badge">{strike.category}</span>
+      <span className="gp-badge">{strike.workers}</span>
       <div className="gp-dates">
-        {formatDate(strike.start_date)} → {formatDate(strike.end_date)}
+        {strike.strikeDates
+          .map((date) => formatDate(date.toISOString()))
+          .join(" → ")}
       </div>
     </div>
   );

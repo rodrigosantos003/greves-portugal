@@ -1,7 +1,14 @@
 export type Strike = {
-  id: number;
-  description: string;
-  category: string;
-  start_date: string;
-  end_date: string;
+  _id: string;
+  title: string;
+  description?: string;
+  source: "publico" | "jornalnoticias" | "observador" | "lusa";
+  url: string;
+  strikeDates: Date[];
+  sector?: string;
+  workers?: string;
+  confirmed: boolean;
+  scrapedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 };

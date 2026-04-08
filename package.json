@@ -11,6 +11,7 @@
     "start:frontend": "cd frontend && yarn run start",
     "start:api": "cd api && yarn run start",
     "dev:frontend": "cd frontend && yarn run dev",
-    "dev:api": "cd api && yarn run dev"
+    "dev:api": "cd api && yarn run dev",
+    "upgrade:dependencies": "cd api && yarn upgrade --latest && cd .. && cd frontend && yarn upgrade --latest"
   }
 }

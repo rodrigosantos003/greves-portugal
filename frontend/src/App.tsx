@@ -8,7 +8,7 @@ import type { Strike } from "./types";
 function App() {
   const [visible, setVisible] = useState(false);
 
-  const { data: strikes, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["strikes"],
     queryFn: getStrikes,
     enabled: visible,
@@ -18,7 +18,10 @@ function App() {
 
   return (
     <div style={{ position: "relative" }}>
-      <h1 className="gp-title">Outra vez em greve? 🇵🇹</h1>
+      <div className="gp-title-row">
+        <h1 className="gp-title">Outra vez em greve?</h1>
+        <img src="/icons8-portugal-48.png" alt="Portugal" />
+      </div>
       <div className="gp-btn-row">
         <button
           type="button"
@@ -32,11 +35,11 @@ function App() {
         <div className="gp-list">
           {isLoading ? (
             <p className="gp-empty">A carregar...</p>
-          ) : strikes?.data?.length === 0 ? (
+          ) : !data?.strikes || data?.strikes.length === 0 ? (
             <p className="gp-empty">Sem greves registadas para hoje.</p>
           ) : (
-            strikes.data.map((s: Strike, i: number) => (
-              <StrikeCard key={s.id} strike={s} idx={i} />
+            data.strikes.map((strike: Strike, i: number) => (
+              <StrikeCard key={strike._id} strike={strike} idx={i} />
             ))
           )}
         </div>

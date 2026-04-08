@@ -1,8 +1,8 @@
-import { getStrikes } from "@/controllers/strike.controller";
+import { getCurrentDayStrikes } from "@/controllers/strike.controller";
 import { Router } from "express";
 
 const router = Router();
 
-router.get("/", getStrikes);
+router.get("/", getCurrentDayStrikes);
 
 export default router;
