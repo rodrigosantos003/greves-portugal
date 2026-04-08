@@ -12,7 +12,6 @@ export const getCurrentDayStrikes = async (
     const startOfTomorrow = dayjs(startOfToday).add(1, "day").toDate();
 
     const data = await Strike.find({
-      confirmed: true,
       strikeDates: {
         $elemMatch: { $gte: startOfToday, $lt: startOfTomorrow },
       },
@@ -39,7 +38,6 @@ export const getFutureStrikes = async (
     const startOfTomorrow = dayjs(startOfToday).add(1, "day").toDate();
 
     const data = await Strike.find({
-      confirmed: true,
       strikeDates: {
         $elemMatch: { $gte: startOfToday, $lt: startOfTomorrow },
       },
