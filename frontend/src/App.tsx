@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./styles/App.css";
-import { getFutureStrikes, getStrikes } from "./lib/api";
+import { fetchAPI } from "./lib/api";
 import { StrikeCard } from "./components/Card";
 import { useQuery } from "@tanstack/react-query";
 import type { Strike } from "./types";
@@ -10,7 +10,7 @@ function App() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["strikes"],
-    queryFn: getStrikes,
+    queryFn: () => fetchAPI("/strikes"),
     enabled: visible,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
     retry: false,
@@ -18,7 +18,7 @@ function App() {
 
   const { data: futureData, isLoading: futureIsLoading } = useQuery({
     queryKey: ["futureStrikes"],
-    queryFn: getFutureStrikes,
+    queryFn: () => fetchAPI("/strikes/future"),
     enabled: visible,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
     retry: false,
