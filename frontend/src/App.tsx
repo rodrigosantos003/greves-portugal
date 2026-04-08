@@ -55,8 +55,8 @@ function App() {
 
       {visible && !futureIsLoading && futureData?.strikes && (
         <>
-          <p>Próximas greves:</p>
           <div className="gp-list">
+            <p>Próximas greves:</p>
             {futureData.strikes.map((strike: Strike, i: number) => (
               <StrikeCard key={strike._id} strike={strike} idx={i} />
             ))}
