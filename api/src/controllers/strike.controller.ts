@@ -17,11 +17,6 @@ export const getCurrentDayStrikes = async (
       },
     }).lean();
 
-    if (data.length === 0) {
-      res.json({ strikes: [] });
-      return;
-    }
-
     res.json({ strikes: data });
   } catch (err) {
     logger.error("GET /strikes failed", { err: (err as Error).message });
@@ -35,11 +30,11 @@ export const getFutureStrikes = async (
 ): Promise<void> => {
   try {
     const startOfToday = dayjs().startOf("day").toDate();
-    const startOfTomorrow = dayjs(startOfToday).add(1, "day").toDate();
+    const startOfFiveDays = dayjs(startOfToday).add(5, "day").toDate();
 
     const data = await Strike.find({
       strikeDates: {
-        $elemMatch: { $gte: startOfToday, $lt: startOfTomorrow },
+        $elemMatch: { $gte: startOfToday, $lt: startOfFiveDays },
       },
     }).lean();
 
