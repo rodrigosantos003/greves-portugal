@@ -25,45 +25,50 @@ function App() {
   });
 
   return (
-    <div style={{ position: "relative" }}>
-      <div className="gp-title-row">
-        <h1 className="gp-title">Outra vez em greve?</h1>
-        <img src="/icons8-portugal-48.png" alt="Portugal" />
-      </div>
-      <div className="gp-btn-row">
-        <button
-          type="button"
-          className="gp-btn gp-btn-refresh"
-          onClick={() => setVisible(true)}
-        >
-          🤔 Ver greves de hoje
-        </button>
-      </div>
-      {visible && (
-        <div className="gp-list">
-          {isLoading ? (
-            <p className="gp-empty">A carregar...</p>
-          ) : !data?.strikes || data?.strikes.length === 0 ? (
-            <p className="gp-empty">Sem greves registadas para hoje.</p>
-          ) : (
-            data.strikes.map((strike: Strike, i: number) => (
-              <StrikeCard key={strike._id} strike={strike} idx={i} />
-            ))
-          )}
+    <>
+      <div style={{ position: "relative" }}>
+        <div className="gp-title-row">
+          <h1 className="gp-title">Outra vez em greve?</h1>
+          <img src="/icons8-portugal-48.png" alt="Portugal" />
         </div>
-      )}
-
-      {visible && !futureIsLoading && futureData?.strikes && (
-        <>
+        <div className="gp-btn-row">
+          <button
+            type="button"
+            className="gp-btn gp-btn-refresh"
+            onClick={() => setVisible(true)}
+          >
+            🤔 Ver greves de hoje
+          </button>
+        </div>
+        {visible && (
           <div className="gp-list">
-            <p>Próximas greves:</p>
-            {futureData.strikes.map((strike: Strike, i: number) => (
-              <StrikeCard key={strike._id} strike={strike} idx={i} />
-            ))}
+            {isLoading ? (
+              <p className="gp-empty">A carregar...</p>
+            ) : !data?.strikes || data?.strikes.length === 0 ? (
+              <p className="gp-empty">Sem greves registadas para hoje.</p>
+            ) : (
+              data.strikes.map((strike: Strike, i: number) => (
+                <StrikeCard key={strike._id} strike={strike} idx={i} />
+              ))
+            )}
           </div>
-        </>
-      )}
-    </div>
+        )}
+      </div>
+      <div style={{ marginTop: "2rem" }}>
+        <h2 style={{ textAlign: "center", marginTop: "2rem" }}>
+          Próximas greves:
+        </h2>
+        {visible && !futureIsLoading && futureData?.strikes && (
+          <>
+            <div className="gp-list">
+              {futureData.strikes.map((strike: Strike, i: number) => (
+                <StrikeCard key={strike._id} strike={strike} idx={i} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 

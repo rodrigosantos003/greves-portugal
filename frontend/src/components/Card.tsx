@@ -5,7 +5,7 @@ export function StrikeCard({ strike, idx }: { strike: Strike; idx: number }) {
   return (
     <div
       className="gp-card"
-      style={{ animationDelay: `${idx * 60}ms` }}
+      style={{ animationDelay: `${idx * 60}ms`, cursor: "pointer" }}
       onClick={() => window.open(strike.url, "_blank")}
     >
       <div className="gp-card-row1">
