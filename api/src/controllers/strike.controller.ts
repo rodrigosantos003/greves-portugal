@@ -29,12 +29,12 @@ export const getFutureStrikes = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const startOfToday = dayjs().startOf("day").toDate();
-    const startOfFiveDays = dayjs(startOfToday).add(5, "day").toDate();
+    const startOfTomorrow = dayjs().startOf("day").add(1, "day").toDate();
+    const startOfFiveDays = dayjs(startOfTomorrow).add(5, "day").toDate();
 
     const data = await Strike.find({
       strikeDates: {
-        $elemMatch: { $gte: startOfToday, $lt: startOfFiveDays },
+        $elemMatch: { $gte: startOfTomorrow, $lt: startOfFiveDays },
       },
     }).lean();
 
