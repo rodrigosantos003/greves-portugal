@@ -1,10 +1,12 @@
 import * as cheerio from "cheerio";
 import type { Browser } from "puppeteer";
 import logger from "./logger";
-import { extractDatesFromText, keepTodayAndFutureDates } from "./dateParser";
-import type { ScrapedStrike, StrikeSource } from "../models/strike.model";
-
-// ─── Shared helpers ───────────────────────────────────────────────────────────
+import {
+  dateISOInLisbon,
+  extractDatesFromText,
+  keepTodayAndFutureDates,
+} from "./dateParser";
+import { type ScrapedStrike } from "../models/strike.model";
 
 const STRIKE_KEYWORDS_PT = [
   "greve",
@@ -67,9 +69,22 @@ interface ParsedArticle {
   dateText: string;
 }
 
+/** YYYY-MM-DD for the first day of the current calendar month (Europe/Lisbon). */
+function startOfCurrentMonthISO(): string {
+  const now = new Date();
+  const y = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Lisbon",
+    year: "numeric",
+  }).format(now);
+  const mo = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Lisbon",
+    month: "2-digit",
+  }).format(now);
+  return `${y}-${mo}-01`;
+}
+
 function normalizeGoogleRedirectUrl(raw: string): string {
   try {
-    // Google CSE often returns https://www.google.com/url?...&q=<realUrl>
     const u = new URL(raw);
     if (u.hostname.includes("google.") && u.pathname === "/url") {
       const q = u.searchParams.get("q");
@@ -81,35 +96,21 @@ function normalizeGoogleRedirectUrl(raw: string): string {
   return raw;
 }
 
-function parseArticleCards(
-  $: cheerio.CheerioAPI,
-  selector: string,
-  baseUrl: string,
-): ParsedArticle[] {
+/** Observador search uses an embedded Google Custom Search (CSE) results list. */
+function parseObservadorCseResults($: cheerio.CheerioAPI): ParsedArticle[] {
+  const baseUrl = "https://observador.pt";
   const articles: ParsedArticle[] = [];
 
-  $(selector).each((_, el) => {
+  $(".gsc-webResult").each((_, el) => {
     const item = $(el);
-    // Supports both site-native cards and Google CSE blocks (gsc-webResult)
     const title =
-      item
-        .find(
-          "a.gs-title, .gs-title a, h2 a, h3 a, h2, h3, .title, .headline a",
-        )
-        .first()
-        .text()
-        .trim() || "";
+      item.find("a.gs-title, .gs-title a").first().text().trim() || "";
     const snippet = (
-      item.find(".gs-snippet, p, .lead, .summary").first().text().trim() || ""
+      item.find(".gs-snippet").first().text().trim() || ""
     ).replace(/\s+/g, " ");
 
-    const linkEl =
-      item.find("a.gs-title").first().length > 0
-        ? item.find("a.gs-title").first()
-        : item.find("a").first();
-
+    const linkEl = item.find("a.gs-title").first();
     const hrefRaw =
-      linkEl.attr("data-ctorig") ??
       linkEl.attr("data-ctorig") ??
       linkEl.attr("href") ??
       item.find("a.gs-image").first().attr("data-ctorig") ??
@@ -135,10 +136,7 @@ function parseArticleCards(
   return articles;
 }
 
-function articlesToStrikes(
-  articles: ParsedArticle[],
-  source: StrikeSource,
-): ScrapedStrike[] {
+function articlesToStrikes(articles: ParsedArticle[]): ScrapedStrike[] {
   return articles.map(({ title, snippet, href, dateText }) => {
     const fullText = `${title} ${snippet}`;
     const strikeDates = keepTodayAndFutureDates(
@@ -148,7 +146,6 @@ function articlesToStrikes(
     return {
       title,
       description: snippet.slice(0, 300),
-      source,
       url: href,
       strikeDates,
       sector: classifySector(fullText),
@@ -163,7 +160,7 @@ const OBSERVADOR_SEARCH = "https://observador.pt/pesquisa/?q=greve";
 /**
  * Scrapes Observador's search results for "greve".
  */
-export async function scrapeOBSERVADOR(
+export async function scrapeObservador(
   browser: Browser,
 ): Promise<ScrapedStrike[]> {
   logger.info("Scraping Observador...", { url: OBSERVADOR_SEARCH });
@@ -171,12 +168,7 @@ export async function scrapeOBSERVADOR(
   try {
     const html = await fetchPage(browser, OBSERVADOR_SEARCH, ".gsc-webResult");
     const $ = cheerio.load(html);
-    const articles = parseArticleCards(
-      $,
-      // Observador search frequently renders via Google CSE blocks
-      ".gsc-webResult, .gsc-result, article, .article-item, .search-item",
-      "https://observador.pt",
-    );
+    const articles = parseObservadorCseResults($);
     const filtered = articles.filter(
       (a) => !`${a.title} ${a.snippet}`.toLowerCase().includes("opinião"),
     );
@@ -190,7 +182,15 @@ export async function scrapeOBSERVADOR(
       return years.every((y) => y === currentYear);
     });
 
-    const results = articlesToStrikes(yearFiltered, "observador");
+    const monthStart = startOfCurrentMonthISO();
+    const monthFiltered = yearFiltered.filter((a) => {
+      const text = `${a.title} ${a.snippet} ${a.dateText}`;
+      const dates = extractDatesFromText(text);
+      if (dates.length === 0) return true;
+      return dates.some((d) => dateISOInLisbon(d) >= monthStart);
+    });
+
+    const results = articlesToStrikes(monthFiltered);
     logger.info(`Observador: found ${results.length} strike articles`);
     return results;
   } catch (err) {

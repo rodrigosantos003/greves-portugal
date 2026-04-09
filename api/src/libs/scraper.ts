@@ -1,41 +1,31 @@
 import type { Browser } from "puppeteer";
 import { Strike } from "@/models/strike.model";
 import logger from "./logger";
-import type { ScrapedStrike, ScrapeSummary } from "@/models/strike.model";
-import { scrapeOBSERVADOR } from "./news";
+import type { ScrapeSummary } from "@/models/strike.model";
+import { scrapeObservador } from "./news";
 import { keepTodayAndFutureDates } from "./dateParser";
 
 /**
- * Runs all scrapers in parallel, merges results, and upserts into MongoDB.
- * Returns a summary of the run.
+ * Scrapes Observador, normalizes dates, and upserts into MongoDB.
  */
-export async function runAllScrapers(browser: Browser): Promise<ScrapeSummary> {
+export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
   logger.info("Starting scrape run...");
   const start = Date.now();
 
-  const [observadorResult] = await Promise.allSettled([
-    scrapeOBSERVADOR(browser),
-  ]);
-
-  const allResults: ScrapedStrike[] = [
-    ...(observadorResult.status === "fulfilled" ? observadorResult.value : []),
-  ];
+  const allResults = await scrapeObservador(browser);
 
   logger.info(`Total raw results: ${allResults.length}`);
 
-  // Keep only today+future dates (Lisbon day) and drop items with none left
   const normalized = allResults.map((r) => ({
     ...r,
     strikeDates: keepTodayAndFutureDates(r.strikeDates),
   }));
 
-  // Filter out entries with no dates (we can't place them on a calendar)
   const withDates = normalized.filter((r) => r.strikeDates.length > 0);
   const skipped = allResults.length - withDates.length;
   if (skipped > 0)
     logger.warn(`Skipped ${skipped} entries with no parseable dates`);
 
-  // Upsert into MongoDB, keyed on URL to prevent duplicates
   let upserted = 0;
   let errors = 0;
 
@@ -47,7 +37,6 @@ export async function runAllScrapers(browser: Browser): Promise<ScrapeSummary> {
           $set: {
             title: entry.title,
             description: entry.description,
-            source: entry.source,
             strikeDates: entry.strikeDates,
             sector: entry.sector,
             workers: entry.workers,

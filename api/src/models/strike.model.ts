@@ -1,11 +1,8 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
-export type StrikeSource = "publico" | "jornalnoticias" | "observador" | "lusa";
-
 export interface ScrapedStrike {
   title: string;
   description: string;
-  source: StrikeSource;
   url: string;
   strikeDates: Date[];
   sector: string;
@@ -24,7 +21,6 @@ export interface ScrapeSummary {
 export interface IStrike extends Document {
   title: string;
   description?: string;
-  source: StrikeSource;
   url: string;
   strikeDates: Date[];
   sector?: string;
@@ -45,16 +41,6 @@ const strikeSchema = new Schema<IStrike>(
     description: {
       type: String,
       trim: true,
-    },
-    source: {
-      type: String,
-      required: true,
-      enum: [
-        "publico",
-        "jornalnoticias",
-        "observador",
-        "lusa",
-      ] satisfies StrikeSource[],
     },
     url: {
       type: String,
