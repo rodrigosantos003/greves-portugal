@@ -64,6 +64,24 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
       year: "numeric",
     }).format(referenceDate),
   );
+  const referenceMonthInLisbon = Number(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Lisbon",
+      month: "2-digit",
+    }).format(referenceDate),
+  );
+
+  /**
+   * For dates without an explicit year, keep the reference year by default.
+   * If we are near year-end and the month points to early next year
+   * (e.g. "10 de janeiro" mentioned in December), roll forward one year.
+   */
+  const inferYearForNoYearDate = (month1to12: number): number => {
+    if (referenceMonthInLisbon >= 11 && month1to12 <= 2) {
+      return referenceYearInLisbon + 1;
+    }
+    return referenceYearInLisbon;
+  };
 
   // Pattern: "12 de março de 2026"
   const ptPattern = /\b(\d{1,2})\s+de\s+([a-záéíóúâêôãõç]+)\s+de\s+(\d{4})\b/gi;
@@ -84,7 +102,9 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
   // Pattern: DD/MM (assume Lisbon year of reference date)
   const dmPattern = /\b(\d{1,2})\/(\d{1,2})\b/g;
   while ((m = dmPattern.exec(text)) !== null) {
-    const d = new Date(referenceYearInLisbon, Number(m[2]) - 1, Number(m[1]));
+    const month = Number(m[2]);
+    const inferredYear = inferYearForNoYearDate(month);
+    const d = new Date(inferredYear, month - 1, Number(m[1]));
     if (!isNaN(d.getTime())) found.set(keyInLisbon(d), d);
   }
 
@@ -92,7 +112,13 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
   const ptNoYearPattern =
     /\b(\d{1,2})\s+(?:de\s+)?([a-záéíóúâêôãõç]+)\b/gi;
   while ((m = ptNoYearPattern.exec(text)) !== null) {
-    const d = parsePtDate(`${m[1]} ${m[2]} ${referenceYearInLisbon}`);
+    const monthKey = (m[2] ?? "").toLowerCase();
+    const month = PT_MONTHS[monthKey];
+    const inferredYear =
+      month === undefined
+        ? referenceYearInLisbon
+        : inferYearForNoYearDate(month + 1);
+    const d = parsePtDate(`${m[1]} ${m[2]} ${inferredYear}`);
     if (d) found.set(keyInLisbon(d), d);
   }
 

@@ -54,20 +54,25 @@ function App() {
           </div>
         )}
       </div>
-      <div style={{ marginTop: "2rem" }}>
-        <h2 style={{ textAlign: "center", marginTop: "2rem" }}>
-          Próximas greves:
-        </h2>
-        {visible && !futureIsLoading && futureData?.strikes && (
-          <>
-            <div className="gp-list">
-              {futureData.strikes.map((strike: Strike, i: number) => (
+      {visible && (
+        <div style={{ marginTop: "2rem" }}>
+          <h2 style={{ textAlign: "center", marginTop: "2rem" }}>
+            Próximas greves:
+          </h2>
+
+          <div className="gp-list">
+            {futureIsLoading ? (
+              <p className="gp-empty">A carregar...</p>
+            ) : !futureData?.strikes || futureData?.strikes.length === 0 ? (
+              <p className="gp-empty">Sem greves próximas.</p>
+            ) : (
+              futureData.strikes.map((strike: Strike, i: number) => (
                 <StrikeCard key={strike._id} strike={strike} idx={i} />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

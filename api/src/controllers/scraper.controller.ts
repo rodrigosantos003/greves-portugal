@@ -1,9 +1,13 @@
 import type { Browser } from "puppeteer";
 import { Strike } from "@/models/strike.model";
-import logger from "./logger";
+import logger from "../libs/logger";
 import type { ScrapeSummary } from "@/models/strike.model";
-import { scrapeObservador } from "./news";
-import { keepTodayAndFutureDates } from "./dateParser";
+import { scrapeObservador } from "../libs/news";
+import { keepTodayAndFutureDates } from "./dateParser.controller";
+import {
+  dedupeScrapedStrikes,
+  hasDuplicateInDatabase,
+} from "./strikeDedupe.controller";
 
 /**
  * Scrapes Observador, normalizes dates, and upserts into MongoDB.
@@ -26,11 +30,23 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
   if (skipped > 0)
     logger.warn(`Skipped ${skipped} entries with no parseable dates`);
 
+  const deduped = dedupeScrapedStrikes(withDates);
+  const skippedBatchDupes = withDates.length - deduped.length;
+  if (skippedBatchDupes > 0)
+    logger.info(
+      `Deduped ${skippedBatchDupes} search results (same strike dates + overlapping keywords)`,
+    );
+
   let upserted = 0;
+  let databaseDuplicatesSkipped = 0;
   let errors = 0;
 
-  for (const entry of withDates) {
+  for (const entry of deduped) {
     try {
+      if (await hasDuplicateInDatabase(entry)) {
+        databaseDuplicatesSkipped++;
+        continue;
+      }
       await Strike.findOneAndUpdate(
         { url: entry.url },
         {
@@ -65,7 +81,9 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
     durationSeconds: ((Date.now() - start) / 1000).toFixed(1),
     total: allResults.length,
     withDates: withDates.length,
+    searchDuplicatesSkipped: skippedBatchDupes,
     upserted,
+    databaseDuplicatesSkipped,
     errors,
   };
 

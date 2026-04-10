@@ -5,7 +5,7 @@ import {
   dateISOInLisbon,
   extractDatesFromText,
   keepTodayAndFutureDates,
-} from "./dateParser";
+} from "../controllers/dateParser.controller";
 import { type ScrapedStrike } from "../models/strike.model";
 
 const STRIKE_KEYWORDS_PT = [
@@ -173,14 +173,19 @@ export async function scrapeObservador(
     const filtered = articles.filter(
       (a) => !`${a.title} ${a.snippet}`.toLowerCase().includes("opinião"),
     );
-    const currentYear = new Date().getFullYear();
+    const currentYearInLisbon = Number(
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Lisbon",
+        year: "numeric",
+      }).format(new Date()),
+    );
     const yearFiltered = filtered.filter((a) => {
       const text = `${a.title} ${a.snippet}`.toLowerCase();
       const years = [...text.matchAll(/\b(20\d{2})\b/g)].map((m) =>
         Number(m[1]),
       );
       if (years.length === 0) return true;
-      return years.every((y) => y === currentYear);
+      return years.every((y) => y >= currentYearInLisbon);
     });
 
     const monthStart = startOfCurrentMonthISO();

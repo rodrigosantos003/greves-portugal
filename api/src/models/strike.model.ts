@@ -14,7 +14,11 @@ export interface ScrapeSummary {
   durationSeconds: string;
   total: number;
   withDates: number;
+  /** Extra articles in search results merged as same strike (dates + keywords) */
+  searchDuplicatesSkipped: number;
   upserted: number;
+  /** Not inserted: same strike already stored under a different URL */
+  databaseDuplicatesSkipped: number;
   errors: number;
 }
 
