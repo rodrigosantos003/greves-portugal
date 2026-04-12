@@ -1,6 +1,5 @@
 import "dotenv/config";
 import express from "express";
-import swaggerUi from "swagger-ui-express";
 import { connectDB, disconnectDB } from "@/libs/connection";
 import logger from "@/libs/logger";
 import setupRoutes from "./routes";
@@ -20,14 +19,6 @@ app.use(
 app.get("/openapi.json", (_req, res) => {
   res.json(openapiDocument);
 });
-
-app.use(
-  "/reference",
-  swaggerUi.serve,
-  swaggerUi.setup(openapiDocument, {
-    customSiteTitle: "Greves Portugal API",
-  }),
-);
 
 setupRoutes(app);
 
