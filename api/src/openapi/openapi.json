@@ -9,6 +9,10 @@
     {
       "url": "http://localhost:3000",
       "description": "Local development"
+    },
+    {
+      "url": "https://api-greves-portugal.vercel.app",
+      "description": "Production"
     }
   ],
   "paths": {
