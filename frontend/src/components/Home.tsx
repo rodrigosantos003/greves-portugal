@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./styles/App.css";
+import "../styles/App.css";
 import { fetchAPI } from "../lib/api";
 import { StrikeCard } from "../components/Card";
 import { useQueries } from "@tanstack/react-query";
