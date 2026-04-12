@@ -1,0 +1,163 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Greves Portugal API",
+    "description": "REST API for Portuguese strike (greve) data.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "paths": {
+    "/strikes": {
+      "get": {
+        "summary": "Strikes for today",
+        "description": "Returns strikes whose dates fall on the current calendar day (server timezone).",
+        "operationId": "getCurrentDayStrikes",
+        "tags": ["Strikes"],
+        "responses": {
+          "200": {
+            "description": "List of strikes for today",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrikesListResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/strikes/future": {
+      "get": {
+        "summary": "Upcoming strikes (next 5 days)",
+        "description": "Returns strikes with dates from tomorrow through the next five days (exclusive end), based on server date.",
+        "operationId": "getFutureStrikes",
+        "tags": ["Strikes"],
+        "responses": {
+          "200": {
+            "description": "List of upcoming strikes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrikesListResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Reports API and database availability.",
+        "operationId": "getHealth",
+        "tags": ["System"],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOk"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unhealthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "Strikes", "description": "Strike listings" },
+    { "name": "System", "description": "Operational endpoints" }
+  ],
+  "components": {
+    "schemas": {
+      "Strike": {
+        "type": "object",
+        "description": "A strike record from MongoDB (lean JSON). Dates are ISO 8601 strings.",
+        "properties": {
+          "_id": { "type": "string", "description": "MongoDB ObjectId" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "strikeDates": {
+            "type": "array",
+            "items": { "type": "string", "format": "date-time" }
+          },
+          "sector": { "type": "string" },
+          "workers": { "type": "string", "nullable": true },
+          "confirmed": { "type": "boolean" },
+          "scrapedAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "url", "strikeDates", "confirmed"]
+      },
+      "StrikesListResponse": {
+        "type": "object",
+        "required": ["strikes"],
+        "properties": {
+          "strikes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Strike" }
+          }
+        }
+      },
+      "HealthOk": {
+        "type": "object",
+        "required": ["ok"],
+        "properties": {
+          "ok": { "type": "boolean", "enum": [true] }
+        }
+      },
+      "HealthError": {
+        "type": "object",
+        "required": ["ok", "error"],
+        "properties": {
+          "ok": { "type": "boolean", "enum": [false] },
+          "error": { "type": "string" }
+        }
+      },
+      "ErrorMessage": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": { "type": "string", "example": "Internal server error" }
+        }
+      }
+    },
+    "responses": {
+      "InternalError": {
+        "description": "Unexpected server error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorMessage" }
+          }
+        }
+      }
+    }
+  }
+}
