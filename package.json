@@ -8,7 +8,7 @@
     "install:api": "cd api && yarn install",
     "build:frontend": "cd frontend && yarn run build",
     "build:api": "cd api && yarn run build",
-    "start:frontend": "cd frontend && yarn run start",
+    "start:frontend": "cd frontend && yarn run preview",
     "start:api": "cd api && yarn run start",
     "dev:frontend": "cd frontend && yarn run dev",
     "dev:api": "cd api && yarn run dev",
