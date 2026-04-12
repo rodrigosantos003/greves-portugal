@@ -123,7 +123,7 @@ function parseObservadorCseResults($: cheerio.CheerioAPI): ParsedArticle[] {
       item.find("time, .date").first().text().trim();
 
     if (!title || !href) return;
-    if (!containsStrikeKeyword(`${title} ${snippet}`)) return;
+    if (!containsStrikeKeyword(`${title}`)) return;
 
     const absoluteHref = href.startsWith("http") ? href : `${baseUrl}${href}`;
     articles.push({
