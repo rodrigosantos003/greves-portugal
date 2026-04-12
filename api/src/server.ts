@@ -21,15 +21,8 @@ app.get("/openapi.json", (_req, res) => {
   res.json(openapiDocument);
 });
 
-// Without a trailing slash, relative asset URLs (./swagger-ui-bundle.js) resolve to
-// the site root and return HTML on Vercel — use /reference/ for Swagger UI.
-app.get("/reference", (req, res) => {
-  const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
-  res.redirect(301, `/reference/${qs}`);
-});
-
 app.use(
-  "/reference/",
+  "/reference",
   swaggerUi.serve,
   swaggerUi.setup(openapiDocument, {
     customSiteTitle: "Greves Portugal API",
