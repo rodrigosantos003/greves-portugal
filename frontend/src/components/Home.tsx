@@ -32,7 +32,9 @@ export function Home() {
   );
 
   const listLoading =
-    strikeView !== "future"
+    strikeView === "all"
+      ? currentStrikes?.isLoading || futureStrikes?.isLoading
+      : strikeView === "today"
       ? currentStrikes?.isLoading
       : futureStrikes?.isLoading;
 
@@ -115,7 +117,15 @@ export function Home() {
         </div>
         <div className="gp-list" role="tabpanel">
           {listLoading ? (
-            <p className="gp-empty">A carregar...</p>
+            <div
+              className="gp-list-loader"
+              role="status"
+              aria-live="polite"
+              aria-label="A carregar greves"
+            >
+              <span className="gp-spinner" aria-hidden="true" />
+              <p className="gp-empty">A carregar</p>
+            </div>
           ) : !listStrikes || listStrikes.length === 0 ? (
             <p className="gp-empty">{emptyMessage}</p>
           ) : (
