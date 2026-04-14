@@ -4,14 +4,16 @@
   "description": "Greves Portugal",
   "license": "MIT",
   "scripts": {
+    "install:all": "yarn install:frontend && yarn install:api",
     "install:frontend": "cd frontend && yarn install",
     "install:api": "cd api && yarn install",
+    "upgrade:dependencies": "cd api && yarn upgrade --latest && cd .. && cd frontend && yarn upgrade --latest",
     "build:frontend": "cd frontend && yarn run build",
     "build:api": "cd api && yarn run build",
+    "build:all": "yarn build:frontend && yarn build:api",
     "start:frontend": "cd frontend && yarn run preview",
     "start:api": "cd api && yarn run start",
     "dev:frontend": "cd frontend && yarn run dev",
-    "dev:api": "cd api && yarn run dev",
-    "upgrade:dependencies": "cd api && yarn upgrade --latest && cd .. && cd frontend && yarn upgrade --latest"
+    "dev:api": "cd api && yarn run dev"
   }
 }

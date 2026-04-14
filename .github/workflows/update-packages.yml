@@ -1,0 +1,38 @@
+name: Update packages
+
+on:
+  schedule:
+    # Runs at 01:00 on the 15th day of every month
+    - cron: "1 0 15 * *"
+  workflow_dispatch:
+
+jobs:
+  update-packages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        run: yarn install:all
+
+      - name: Update packages
+        run: yarn upgrade:dependencies
+
+      - name: Run build
+        run: yarn build:all
+
+      - name: Commit and push changes
+        if: success()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add yarn.lock
+          git commit -m "chore: Update packages"
+          git push
