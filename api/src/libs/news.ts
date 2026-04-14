@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import type { Browser } from "puppeteer";
+import dayjs from "dayjs";
 import logger from "./logger";
 import {
   dateISOInLisbon,
@@ -72,15 +73,15 @@ interface ParsedArticle {
 
 /** YYYY-MM-DD for the first day of the current calendar month (Europe/Lisbon). */
 function startOfCurrentMonthISO(): string {
-  const now = new Date();
+  const now = dayjs();
   const y = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Lisbon",
     year: "numeric",
-  }).format(now);
+  }).format(now.toDate());
   const mo = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Lisbon",
     month: "2-digit",
-  }).format(now);
+  }).format(now.toDate());
   return `${y}-${mo}-01`;
 }
 
@@ -95,6 +96,37 @@ function normalizeGoogleRedirectUrl(raw: string): string {
     // ignore
   }
   return raw;
+}
+
+/**
+ * Returns true when the provided text has any explicit DD/MM/YYYY date
+ * older than the current month (Europe/Lisbon).
+ */
+function hasPastExplicitDmyDate(text: string): boolean {
+  const monthStart = startOfCurrentMonthISO();
+  const dmyPattern = /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/g;
+
+  for (const match of text.matchAll(dmyPattern)) {
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const year = Number(match[3]);
+    if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year))
+      continue;
+
+    // Validate calendar date (avoid rollover from invalid values like 31/02/2026).
+    const candidate = new Date(year, month - 1, day);
+    if (
+      candidate.getFullYear() !== year ||
+      candidate.getMonth() !== month - 1 ||
+      candidate.getDate() !== day
+    ) {
+      continue;
+    }
+
+    if (dateISOInLisbon(candidate) < monthStart) return true;
+  }
+
+  return false;
 }
 
 /** Observador search uses an embedded Google Custom Search (CSE) results list. */
@@ -124,6 +156,7 @@ function parseObservadorCseResults($: cheerio.CheerioAPI): ParsedArticle[] {
 
     if (!title || !href) return;
     if (!containsStrikeKeyword(`${title}`)) return;
+    if (hasPastExplicitDmyDate(snippet)) return;
 
     const absoluteHref = href.startsWith("http") ? href : `${baseUrl}${href}`;
     articles.push({
@@ -177,7 +210,7 @@ export async function scrapeObservador(
       new Intl.DateTimeFormat("en-CA", {
         timeZone: "Europe/Lisbon",
         year: "numeric",
-      }).format(new Date()),
+      }).format(dayjs().toDate()),
     );
     const yearFiltered = filtered.filter((a) => {
       const text = `${a.title} ${a.snippet}`.toLowerCase();

@@ -6,8 +6,6 @@ export interface ScrapedStrike {
   url: string;
   strikeDates: Date[];
   sector: string;
-  workers: string | null;
-  confirmed: boolean;
 }
 
 export interface ScrapeSummary {
@@ -28,8 +26,6 @@ export interface IStrike extends Document {
   url: string;
   strikeDates: Date[];
   sector?: string;
-  workers?: string;
-  confirmed: boolean;
   scrapedAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -58,14 +54,6 @@ const strikeSchema = new Schema<IStrike>(
     sector: {
       type: String,
       trim: true,
-    },
-    workers: {
-      type: String,
-      trim: true,
-    },
-    confirmed: {
-      type: Boolean,
-      default: false,
     },
     scrapedAt: {
       type: Date,

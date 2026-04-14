@@ -7,14 +7,20 @@ import { keepTodayAndFutureDates } from "./dateParser.controller";
 import {
   dedupeScrapedStrikes,
   hasDuplicateInDatabase,
+  isSameStrikeNews,
 } from "./strikeDedupe.controller";
+import dayjs from "dayjs";
+
+function isStrikeCancellationTitle(title: string): boolean {
+  return title.toLowerCase().includes("desconvocada");
+}
 
 /**
  * Scrapes Observador, normalizes dates, and upserts into MongoDB.
  */
 export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
   logger.info("Starting scrape run...");
-  const start = Date.now();
+  const start = dayjs();
 
   const allResults = await scrapeObservador(browser);
 
@@ -37,11 +43,62 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
       `Deduped ${skippedBatchDupes} search results (same strike dates + overlapping keywords)`,
     );
 
+  const cancellationEntries = deduped.filter((entry) =>
+    isStrikeCancellationTitle(entry.title),
+  );
+  const upsertEntries = deduped.filter(
+    (entry) => !isStrikeCancellationTitle(entry.title),
+  );
+
   let upserted = 0;
   let databaseDuplicatesSkipped = 0;
   let errors = 0;
+  let cancelledRelatedDeleted = 0;
+  for (const cancellation of cancellationEntries) {
+    if (cancellation.strikeDates.length === 0) continue;
+    try {
+      const times = cancellation.strikeDates.map((d) => d.getTime());
+      const padMs = 72 * 3600 * 1000;
+      const tMin = Math.min(...times) - padMs;
+      const tMax = Math.max(...times) + padMs;
 
-  for (const entry of deduped) {
+      const candidates = await Strike.find({
+        strikeDates: {
+          $elemMatch: { $gte: new Date(tMin), $lte: new Date(tMax) },
+        },
+      })
+        .select({ _id: 1, title: 1, description: 1, strikeDates: 1, url: 1 })
+        .lean()
+        .limit(200);
+
+      const relatedIds = candidates
+        .filter((candidate) =>
+          isSameStrikeNews(cancellation, {
+            title: candidate.title,
+            description: candidate.description ?? "",
+            strikeDates: candidate.strikeDates,
+          }),
+        )
+        .map((candidate) => candidate._id);
+      if (relatedIds.length === 0) continue;
+
+      const deleted = await Strike.deleteMany({ _id: { $in: relatedIds } });
+      cancelledRelatedDeleted += deleted.deletedCount ?? 0;
+    } catch (err) {
+      logger.error("Failed to delete cancelled strike entries", {
+        title: cancellation.title,
+        err: (err as Error).message,
+      });
+      errors++;
+    }
+  }
+  if (cancelledRelatedDeleted > 0) {
+    logger.info(
+      `Deleted ${cancelledRelatedDeleted} strike entries from cancelled news`,
+    );
+  }
+
+  for (const entry of upsertEntries) {
     try {
       if (await hasDuplicateInDatabase(entry)) {
         databaseDuplicatesSkipped++;
@@ -55,9 +112,7 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
             description: entry.description,
             strikeDates: entry.strikeDates,
             sector: entry.sector,
-            workers: entry.workers,
-            confirmed: entry.confirmed,
-            scrapedAt: new Date(),
+            scrapedAt: dayjs().toDate(),
           },
         },
         { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
@@ -78,7 +133,7 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
   }
 
   const summary: ScrapeSummary = {
-    durationSeconds: ((Date.now() - start) / 1000).toFixed(1),
+    durationSeconds: dayjs().diff(start, "seconds").toString(),
     total: allResults.length,
     withDates: withDates.length,
     searchDuplicatesSkipped: skippedBatchDupes,

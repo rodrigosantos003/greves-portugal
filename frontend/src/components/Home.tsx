@@ -27,15 +27,22 @@ export function Home() {
     ],
   });
 
+  const allStrikes = currentStrikes?.data?.strikes?.concat(
+    futureStrikes?.data?.strikes ?? [],
+  );
+
   const listLoading =
-    strikeView === "today"
+    strikeView !== "future"
       ? currentStrikes?.isLoading
       : futureStrikes?.isLoading;
 
   const listStrikes =
-    strikeView === "today"
+    strikeView === "all"
+      ? allStrikes
+      : strikeView === "today"
       ? currentStrikes?.data?.strikes
       : futureStrikes?.data?.strikes;
+
   const emptyMessage =
     strikeView === "today"
       ? "Sem greves registadas para hoje."
