@@ -160,7 +160,7 @@ export function titleWordSetsSimilar(a: Set<string>, b: Set<string>): boolean {
 
   const minSize = Math.min(a.size, b.size);
   const overlapRatio = interCount / minSize;
-  if (overlapRatio >= 0.6) return true;
+  if (overlapRatio >= 0.5) return true;
 
   // Fallback for tiny titles, e.g. "Greve CP hoje" vs "CP em greve hoje".
   if (interCount >= 2 && minSize <= 3) return true;

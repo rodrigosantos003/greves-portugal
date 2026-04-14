@@ -19,24 +19,63 @@ const PT_MONTHS: PtMonthMap = {
 export function parsePtDate(str: string): Date | null {
   if (!str) return null;
   const s = str.trim().toLowerCase();
+  const compact = s.replace(/\s+/g, " ");
+
+  const getLisbonYMD = (d: Date) => {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Lisbon",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(d);
+    const y = Number(parts.find((p) => p.type === "year")?.value);
+    const m = Number(parts.find((p) => p.type === "month")?.value);
+    const day = Number(parts.find((p) => p.type === "day")?.value);
+    return { y, m, day };
+  };
+
+  const addLisbonDays = (base: Date, deltaDays: number): Date => {
+    const { y, m, day } = getLisbonYMD(base);
+    return new Date(Date.UTC(y, m - 1, day + deltaDays, 12, 0, 0));
+  };
+
+  // Relative dates used in article cards, e.g. "há 3 dias", "há 2 horas".
+  if (/\bhoje\b/.test(compact)) return addLisbonDays(new Date(), 0);
+  if (/\bontem\b/.test(compact)) return addLisbonDays(new Date(), -1);
+  if (/\banteontem\b/.test(compact)) return addLisbonDays(new Date(), -2);
+
+  const relativeMatch = compact.match(
+    /\bh[aá]\s+(\d+)\s+(dia|dias|hora|horas|minuto|minutos)\b/i,
+  );
+  if (relativeMatch) {
+    const amount = Number(relativeMatch[1]);
+    const unit = relativeMatch[2];
+    if (!Number.isFinite(amount)) return null;
+    if (unit.startsWith("dia")) return addLisbonDays(new Date(), -amount);
+    // For hours/minutes we only need a stable calendar reference date.
+    if (unit.startsWith("hora") || unit.startsWith("minuto"))
+      return addLisbonDays(new Date(), 0);
+  }
 
   // ISO date or datetime, e.g.:
   // - 2026-03-12
   // - 2026-03-12t09:30:00z
   // - 2026-03-12t09:30:00+01:00
-  if (/^\d{4}-\d{2}-\d{2}(?:t.*)?$/.test(s)) {
-    const d = new Date(s);
+  if (/^\d{4}-\d{2}-\d{2}(?:t.*)?$/.test(compact)) {
+    const d = new Date(compact);
     return isNaN(d.getTime()) ? null : d;
   }
 
   // DD/MM/YYYY
-  const dmyMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  const dmyMatch = compact.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (dmyMatch) {
     return new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1]));
   }
 
   // "12 de março de 2026" or "12 março 2026"
-  const ptMatch = s.match(/(\d{1,2})\s+(?:de\s+)?([a-záéíóúâêôãõç]+)\s+(?:de\s+)?(\d{4})/);
+  const ptMatch = compact.match(
+    /(\d{1,2})\s+(?:de\s+)?([a-záéíóúâêôãõç]+)\s+(?:de\s+)?(\d{4})/,
+  );
   if (ptMatch) {
     const month = PT_MONTHS[ptMatch[2]];
     if (month !== undefined) {

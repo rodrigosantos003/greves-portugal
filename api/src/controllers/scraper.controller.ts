@@ -46,9 +46,22 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
   const cancellationEntries = deduped.filter((entry) =>
     isStrikeCancellationTitle(entry.title),
   );
-  const upsertEntries = deduped.filter(
+  const nonCancellationEntries = deduped.filter(
     (entry) => !isStrikeCancellationTitle(entry.title),
   );
+  const upsertEntries = nonCancellationEntries.filter(
+    (entry) =>
+      !cancellationEntries.some((cancellation) =>
+        isSameStrikeNews(entry, cancellation),
+      ),
+  );
+  const skippedCancelledInBatch =
+    nonCancellationEntries.length - upsertEntries.length;
+  if (skippedCancelledInBatch > 0) {
+    logger.info(
+      `Skipped ${skippedCancelledInBatch} entries cancelled by desconvocada news in this batch`,
+    );
+  }
 
   let upserted = 0;
   let databaseDuplicatesSkipped = 0;

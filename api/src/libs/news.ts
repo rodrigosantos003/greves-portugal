@@ -6,6 +6,7 @@ import {
   dateISOInLisbon,
   extractDatesFromText,
   keepTodayAndFutureDates,
+  parsePtDate,
 } from "../controllers/dateParser.controller";
 import { type ScrapedStrike } from "../models/strike.model";
 
@@ -69,6 +70,14 @@ interface ParsedArticle {
   snippet: string;
   href: string;
   dateText: string;
+}
+
+function resolveArticleReferenceDate(article: ParsedArticle): Date {
+  return (
+    parsePtDate(article.dateText) ??
+    parsePtDate(article.snippet) ??
+    new Date()
+  );
 }
 
 /** YYYY-MM-DD for the first day of the current calendar month (Europe/Lisbon). */
@@ -173,8 +182,14 @@ function parseObservadorCseResults($: cheerio.CheerioAPI): ParsedArticle[] {
 function articlesToStrikes(articles: ParsedArticle[]): ScrapedStrike[] {
   return articles.map(({ title, snippet, href, dateText }) => {
     const fullText = `${title} ${snippet}`;
+    const articleReferenceDate = resolveArticleReferenceDate({
+      title,
+      snippet,
+      href,
+      dateText,
+    });
     const strikeDates = keepTodayAndFutureDates(
-      extractDatesFromText(`${fullText} ${dateText}`),
+      extractDatesFromText(`${fullText} ${dateText}`, articleReferenceDate),
     );
 
     return {
@@ -224,7 +239,8 @@ export async function scrapeObservador(
     const monthStart = startOfCurrentMonthISO();
     const monthFiltered = yearFiltered.filter((a) => {
       const text = `${a.title} ${a.snippet} ${a.dateText}`;
-      const dates = extractDatesFromText(text);
+      const articleReferenceDate = resolveArticleReferenceDate(a);
+      const dates = extractDatesFromText(text, articleReferenceDate);
       if (dates.length === 0) return true;
       return dates.some((d) => dateISOInLisbon(d) >= monthStart);
     });
