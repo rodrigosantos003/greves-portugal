@@ -49,8 +49,7 @@ async function fetchPage(
 ): Promise<string> {
   const page = await browser.newPage();
   await page.setUserAgent({
-    userAgent:
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+    userAgent: "GrevesPortugalBot/1.0 (+https://greves-portugal.vercel.app)",
   });
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
@@ -74,9 +73,7 @@ interface ParsedArticle {
 
 function resolveArticleReferenceDate(article: ParsedArticle): Date {
   return (
-    parsePtDate(article.dateText) ??
-    parsePtDate(article.snippet) ??
-    new Date()
+    parsePtDate(article.dateText) ?? parsePtDate(article.snippet) ?? new Date()
   );
 }
 
@@ -119,7 +116,11 @@ function hasPastExplicitDmyDate(text: string): boolean {
     const day = Number(match[1]);
     const month = Number(match[2]);
     const year = Number(match[3]);
-    if (!Number.isFinite(day) || !Number.isFinite(month) || !Number.isFinite(year))
+    if (
+      !Number.isFinite(day) ||
+      !Number.isFinite(month) ||
+      !Number.isFinite(year)
+    )
       continue;
 
     // Validate calendar date (avoid rollover from invalid values like 31/02/2026).
