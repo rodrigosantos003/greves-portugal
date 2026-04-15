@@ -38,12 +38,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          mapfile -t files_to_stage < <(git ls-files -- "**/yarn.lock" "**/package.json")
-          if [ ${#files_to_stage[@]} -eq 0 ]; then
-            echo "No tracked yarn.lock or package.json files found"
-            exit 0
-          fi
-          git add "${files_to_stage[@]}"
+          git add api/package.json
+          git add api/yarn.lock
+          git add frontend/package.json
+          git add frontend/yarn.lock
           git diff --staged --quiet && echo "No changes to commit" && exit 0
           git commit -m "chore: update packages"
           git push origin HEAD:${{ github.ref_name }}
