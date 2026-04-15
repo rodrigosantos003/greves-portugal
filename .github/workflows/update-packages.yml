@@ -38,12 +38,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          shopt -s globstar nullglob
-          lockfiles=(**/yarn.lock)
-          packagefiles=(**/package.json)
-          files_to_stage=("${lockfiles[@]}" "${packagefiles[@]}")
+          mapfile -t files_to_stage < <(git ls-files -- "**/yarn.lock" "**/package.json")
           if [ ${#files_to_stage[@]} -eq 0 ]; then
-            echo "No yarn.lock or package.json files found"
+            echo "No tracked yarn.lock or package.json files found"
             exit 0
           fi
           git add "${files_to_stage[@]}"
