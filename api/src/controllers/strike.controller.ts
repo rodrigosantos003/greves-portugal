@@ -13,7 +13,7 @@ export const getCurrentDayStrikes = async (
 
     const data = await Strike.find({
       strikeDates: {
-        $elemMatch: { $gte: startOfToday, $lt: startOfTomorrow },
+        $elemMatch: { $eq: startOfToday, $lt: startOfTomorrow },
       },
     }).lean();
 
