@@ -4,6 +4,7 @@ import { fetchAPI } from "../lib/api";
 import { StrikeCard } from "../components/Card";
 import { useQueries } from "@tanstack/react-query";
 import type { Strike } from "../types";
+import { Helmet } from "react-helmet-async";
 
 type StrikeView = "all" | "today" | "future";
 
@@ -52,6 +53,14 @@ export function Home() {
 
   return (
     <>
+      <Helmet>
+        <title>Greves Portugal | Página Inicial</title>
+        <meta
+          name="description"
+          content="Greves Portugal é uma plataforma que permite aos utilizadores ver as greves em Portugal"
+        />
+      </Helmet>
+
       <nav className="gp-nav gp-nav-top" aria-label="Tipo de greves">
         <div className="gp-nav-inner">
           <div className="gp-nav-brand">
