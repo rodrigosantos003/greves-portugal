@@ -117,6 +117,11 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
         databaseDuplicatesSkipped++;
         continue;
       }
+
+      if (entry.title.toLowerCase().includes("cgtp")) {
+        await Strike.create({ ...entry, title: "Greve da Função Pública" });
+      }
+
       await Strike.findOneAndUpdate(
         { url: entry.url },
         {
