@@ -126,7 +126,7 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
         { url: entry.url },
         {
           $set: {
-            title: entry.title,
+            title: entry.title.replace("Observador", "").trim(),
             description: entry.description,
             strikeDates: entry.strikeDates,
             sector: entry.sector,
