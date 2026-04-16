@@ -118,10 +118,6 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
         continue;
       }
 
-      if (entry.title.toLowerCase().includes("cgtp")) {
-        await Strike.create({ ...entry, title: "Greve da Função Pública" });
-      }
-
       await Strike.findOneAndUpdate(
         { url: entry.url },
         {
@@ -135,6 +131,7 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
         },
         { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
       );
+
       upserted++;
     } catch (err) {
       const mongoErr = err as { code?: number; message?: string };
@@ -147,6 +144,32 @@ export async function runScraper(browser: Browser): Promise<ScrapeSummary> {
         });
         errors++;
       }
+    }
+  }
+
+  const cgtpEntries = await Strike.find({
+    title: { $regex: "cgtp", $options: "i" },
+  });
+
+  if (cgtpEntries.length > 0) {
+    logger.info(`Found ${cgtpEntries.length} CGTP entries`);
+    for (const entry of cgtpEntries) {
+      logger.info(`Creating CGTP entry`, {
+        title: entry.title,
+        url: entry.url,
+        strikeDates: entry.strikeDates,
+      });
+
+      await Strike.deleteOne({ _id: entry._id });
+
+      await Strike.create({
+        url: entry.url,
+        strikeDates: entry.strikeDates,
+        sector: entry.sector,
+        scrapedAt: dayjs().toDate(),
+        title: "Greve da Função Pública (CGTP)",
+        description: entry.description,
+      });
     }
   }
 

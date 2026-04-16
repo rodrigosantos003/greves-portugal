@@ -7,6 +7,7 @@ import {
   extractDatesFromText,
   keepTodayAndFutureDates,
   parsePtDate,
+  todayISO,
 } from "../controllers/dateParser.controller";
 import { type ScrapedStrike } from "../models/strike.model";
 
@@ -71,10 +72,35 @@ interface ParsedArticle {
   dateText: string;
 }
 
+/** YYYY/MM/DD segment in Observador canonical URLs. */
+function extractDateFromObservadorUrl(href: string): Date | null {
+  const m = href.match(/\/(20\d{2})\/(\d{2})\/(\d{2})\//);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const candidate = new Date(y, mo - 1, d);
+  if (
+    candidate.getFullYear() !== y ||
+    candidate.getMonth() !== mo - 1 ||
+    candidate.getDate() !== d
+  ) {
+    return null;
+  }
+  return candidate;
+}
+
+/**
+ * Best-effort article publish date for filtering old search hits.
+ * Uses URL path (Observador) or result card dateText only — not the snippet,
+ * which often contains strike dates unrelated to publication time.
+ */
+function parseArticlePublishedDate(article: ParsedArticle): Date | null {
+  return extractDateFromObservadorUrl(article.href) ?? parsePtDate(article.dateText);
+}
+
 function resolveArticleReferenceDate(article: ParsedArticle): Date {
-  return (
-    parsePtDate(article.dateText) ?? parsePtDate(article.snippet) ?? new Date()
-  );
+  return parseArticlePublishedDate(article) ?? new Date();
 }
 
 /** YYYY-MM-DD for the first day of the current calendar month (Europe/Lisbon). */
@@ -166,7 +192,7 @@ function parseObservadorCseResults($: cheerio.CheerioAPI): ParsedArticle[] {
 
     if (!title || !href) return;
     if (!containsStrikeKeyword(`${title}`)) return;
-    if (hasPastExplicitDmyDate(snippet)) return;
+    if (hasPastExplicitDmyDate(`${title} ${snippet}`)) return;
 
     const absoluteHref = href.startsWith("http") ? href : `${baseUrl}${href}`;
     articles.push({
@@ -237,13 +263,19 @@ export async function scrapeObservador(
       return years.every((y) => y >= currentYearInLisbon);
     });
 
-    const monthStart = startOfCurrentMonthISO();
-    const monthFiltered = yearFiltered.filter((a) => {
+    const todayCutoff = todayISO();
+    const publishFiltered = yearFiltered.filter((a) => {
+      const pub = parseArticlePublishedDate(a);
+      if (!pub) return true;
+      return dateISOInLisbon(pub) >= todayCutoff;
+    });
+
+    const monthFiltered = publishFiltered.filter((a) => {
       const text = `${a.title} ${a.snippet} ${a.dateText}`;
       const articleReferenceDate = resolveArticleReferenceDate(a);
       const dates = extractDatesFromText(text, articleReferenceDate);
       if (dates.length === 0) return true;
-      return dates.some((d) => dateISOInLisbon(d) >= monthStart);
+      return dates.some((d) => dateISOInLisbon(d) >= todayCutoff);
     });
 
     const results = articlesToStrikes(monthFiltered);

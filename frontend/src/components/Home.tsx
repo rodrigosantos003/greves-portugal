@@ -28,9 +28,12 @@ export function Home() {
     ],
   });
 
-  const allStrikes = currentStrikes?.data?.strikes?.concat(
-    futureStrikes?.data?.strikes ?? [],
-  );
+  const allStrikes = currentStrikes?.data?.strikes
+    ?.concat(futureStrikes?.data?.strikes ?? [])
+    .filter(
+      (strike: Strike, index: number, self: Strike[]) =>
+        self.findIndex((t) => t._id === strike._id) === index,
+    );
 
   const listLoading =
     strikeView === "all"
@@ -144,6 +147,13 @@ export function Home() {
           )}
         </div>
       </div>
+
+      <footer className="gp-footer">
+        <p className="gp-footer-text">
+          As greves são atualizadas diariamente com os dados mais recentes,
+          através de scraping do site do Observador.
+        </p>
+      </footer>
     </>
   );
 }
