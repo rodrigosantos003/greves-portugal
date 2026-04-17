@@ -49,7 +49,6 @@ const strikeSchema = new Schema<IStrike>(
     strikeDates: {
       type: [Date],
       required: true,
-      index: true,
     },
     sector: {
       type: String,
@@ -68,8 +67,8 @@ const strikeSchema = new Schema<IStrike>(
 // Prevent duplicate entries for the same URL
 strikeSchema.index({ url: 1 }, { unique: true });
 
-// Fast lookup by date range + confirmation status
-strikeSchema.index({ strikeDates: 1, confirmed: 1 });
+// Fast lookup by date range
+strikeSchema.index({ strikeDates: 1 });
 
 export const Strike: Model<IStrike> = mongoose.model<IStrike>(
   "Strike",

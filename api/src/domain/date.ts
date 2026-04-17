@@ -1,21 +1,14 @@
 type PtMonthMap = Record<string, number>;
 
 const PT_MONTHS: PtMonthMap = {
-  janeiro: 0,  fevereiro: 1, março: 2,    abril: 3,
-  maio: 4,     junho: 5,     julho: 6,    agosto: 7,
-  setembro: 8, outubro: 9,   novembro: 10, dezembro: 11,
+  janeiro: 0, fevereiro: 1, março: 2, abril: 3,
+  maio: 4, junho: 5, julho: 6, agosto: 7,
+  setembro: 8, outubro: 9, novembro: 10, dezembro: 11,
   // Abbreviations
   jan: 0, fev: 1, mar: 2, abr: 3, mai: 4, jun: 5,
   jul: 6, ago: 7, set: 8, out: 9, nov: 10, dez: 11,
 };
 
-/**
- * Try to parse a Portuguese date string into a JS Date.
- * Handles formats:
- *   "12 de março de 2026"
- *   "12/03/2026"
- *   "2026-03-12"
- */
 export function parsePtDate(str: string): Date | null {
   if (!str) return null;
   const s = str.trim().toLowerCase();
@@ -39,7 +32,6 @@ export function parsePtDate(str: string): Date | null {
     return new Date(Date.UTC(y, m - 1, day + deltaDays, 12, 0, 0));
   };
 
-  // Relative dates used in article cards, e.g. "há 3 dias", "há 2 horas".
   if (/\bhoje\b/.test(compact)) return addLisbonDays(new Date(), 0);
   if (/\bontem\b/.test(compact)) return addLisbonDays(new Date(), -1);
   if (/\banteontem\b/.test(compact)) return addLisbonDays(new Date(), -2);
@@ -52,27 +44,21 @@ export function parsePtDate(str: string): Date | null {
     const unit = relativeMatch[2];
     if (!Number.isFinite(amount)) return null;
     if (unit.startsWith("dia")) return addLisbonDays(new Date(), -amount);
-    // For hours/minutes we only need a stable calendar reference date.
-    if (unit.startsWith("hora") || unit.startsWith("minuto"))
+    if (unit.startsWith("hora") || unit.startsWith("minuto")) {
       return addLisbonDays(new Date(), 0);
+    }
   }
 
-  // ISO date or datetime, e.g.:
-  // - 2026-03-12
-  // - 2026-03-12t09:30:00z
-  // - 2026-03-12t09:30:00+01:00
   if (/^\d{4}-\d{2}-\d{2}(?:t.*)?$/.test(compact)) {
     const d = new Date(compact);
     return isNaN(d.getTime()) ? null : d;
   }
 
-  // DD/MM/YYYY
   const dmyMatch = compact.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (dmyMatch) {
     return new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1]));
   }
 
-  // "12 de março de 2026" or "12 março 2026"
   const ptMatch = compact.match(
     /(\d{1,2})\s+(?:de\s+)?([a-záéíóúâêôãõç]+)\s+(?:de\s+)?(\d{4})/,
   );
@@ -86,17 +72,12 @@ export function parsePtDate(str: string): Date | null {
   return null;
 }
 
-/**
- * Extract all dates mentioned in a block of text.
- * Returns an array of Date objects, deduplicated by calendar day.
- */
 export function extractDatesFromText(text: string, referenceDate: Date = new Date()): Date[] {
   const found = new Map<string, Date>();
 
   const keyInLisbon = (d: Date) =>
-    d.toLocaleDateString("sv-SE", { timeZone: "Europe/Lisbon" }); // YYYY-MM-DD
+    d.toLocaleDateString("sv-SE", { timeZone: "Europe/Lisbon" });
 
-  // Use the reference date's Lisbon calendar year for patterns without year.
   const referenceYearInLisbon = Number(
     new Intl.DateTimeFormat("en-CA", {
       timeZone: "Europe/Lisbon",
@@ -110,11 +91,6 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
     }).format(referenceDate),
   );
 
-  /**
-   * For dates without an explicit year, keep the reference year by default.
-   * If we are near year-end and the month points to early next year
-   * (e.g. "10 de janeiro" mentioned in December), roll forward one year.
-   */
   const inferYearForNoYearDate = (month1to12: number): number => {
     if (referenceMonthInLisbon >= 11 && month1to12 <= 2) {
       return referenceYearInLisbon + 1;
@@ -122,7 +98,6 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
     return referenceYearInLisbon;
   };
 
-  // Pattern: "12 de março de 2026"
   const ptPattern = /\b(\d{1,2})\s+de\s+([a-záéíóúâêôãõç]+)\s+de\s+(\d{4})\b/gi;
   let m: RegExpExecArray | null;
 
@@ -131,14 +106,12 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
     if (d) found.set(keyInLisbon(d), d);
   }
 
-  // Pattern: DD/MM/YYYY
   const dmyPattern = /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/g;
   while ((m = dmyPattern.exec(text)) !== null) {
     const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
     if (!isNaN(d.getTime())) found.set(keyInLisbon(d), d);
   }
 
-  // Pattern: DD/MM (assume Lisbon year of reference date)
   const dmPattern = /\b(\d{1,2})\/(\d{1,2})\b/g;
   while ((m = dmPattern.exec(text)) !== null) {
     const month = Number(m[2]);
@@ -147,7 +120,6 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
     if (!isNaN(d.getTime())) found.set(keyInLisbon(d), d);
   }
 
-  // Pattern: "14 de abril" (assume Lisbon year of reference date)
   const ptNoYearPattern =
     /\b(\d{1,2})\s+(?:de\s+)?([a-záéíóúâêôãõç]+)\b/gi;
   while ((m = ptNoYearPattern.exec(text)) !== null) {
@@ -161,25 +133,18 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
     if (d) found.set(keyInLisbon(d), d);
   }
 
-  // Pattern: ISO dates inside timestamps: 2026-03-12 or 2026-03-12T...
   const isoPattern = /\b(\d{4}-\d{2}-\d{2})(?:t[0-9:.+-z]+)?\b/gi;
   while ((m = isoPattern.exec(text)) !== null) {
     const d = parsePtDate(m[0]);
     if (d) found.set(keyInLisbon(d), d);
   }
 
-  // Pattern: URL-style dates: 2026/04/08
   const ymdSlashPattern = /\b(\d{4})\/(\d{2})\/(\d{2})\b/g;
   while ((m = ymdSlashPattern.exec(text)) !== null) {
     const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     if (!isNaN(d.getTime())) found.set(keyInLisbon(d), d);
   }
 
-  // Pattern: weekday mentions like:
-  // - "esta quinta-feira", "nesta quinta", "quinta-feira"
-  // - "próxima terça", "na proxima terca-feira", "próximo sábado"
-  //
-  // We resolve them relative to the referenceDate in the Lisbon timezone.
   const WEEKDAY_TO_JS_DAY: Record<string, number> = {
     domingo: 0,
     segunda: 1,
@@ -196,8 +161,8 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
     "sexta-feira": 5,
     sabado: 6,
     "sábado": 6,
-    "sabado-feira": 6, // uncommon, but harmless
-    "sábado-feira": 6, // uncommon, but harmless
+    "sabado-feira": 6,
+    "sábado-feira": 6,
   };
 
   const getLisbonYMD = (d: Date) => {
@@ -253,15 +218,11 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
       WEEKDAY_TO_JS_DAY[`${normalizedWd}-feira`];
     if (targetDow === undefined) continue;
 
-    let delta = (targetDow - refDow + 7) % 7; // 0..6 (including today)
-
-    // "próxima" usually means "not today"; if today is that weekday, jump a week.
+    let delta = (targetDow - refDow + 7) % 7;
     if (proxima) {
       if (delta === 0) delta = 7;
     } else if (esta) {
-      // "esta" allows today (delta=0) — keep as-is.
-    } else {
-      // No qualifier: treat as the next occurrence incl. today (headline-friendly).
+      // allows today
     }
 
     const d = addDaysUTCNoonFromLisbonYMD(refY, refM, refD, delta);
@@ -271,9 +232,6 @@ export function extractDatesFromText(text: string, referenceDate: Date = new Dat
   return [...found.values()];
 }
 
-/**
- * Returns true if the given date falls on today (ignoring time).
- */
 export function isToday(date: Date): boolean {
   const today = new Date();
   return (
@@ -283,26 +241,16 @@ export function isToday(date: Date): boolean {
   );
 }
 
-/**
- * Returns a YYYY-MM-DD string for today in the Lisbon timezone.
- */
 export function todayISO(): string {
-  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Lisbon' });
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Lisbon" });
 }
 
-/**
- * Returns YYYY-MM-DD for the given Date in the Lisbon timezone.
- * This is useful for day-level comparisons without timezone pitfalls.
- */
 export function dateISOInLisbon(date: Date): string {
   return date.toLocaleDateString("sv-SE", { timeZone: "Europe/Lisbon" });
 }
 
-/**
- * Keep only dates that are today or in the future (Lisbon calendar day).
- */
 export function keepTodayAndFutureDates(dates: Date[]): Date[] {
-  const cutoff = todayISO(); // YYYY-MM-DD
+  const cutoff = todayISO();
   return dates
     .filter((d) => dateISOInLisbon(d) >= cutoff)
     .sort((a, b) => a.getTime() - b.getTime());

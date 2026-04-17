@@ -1,8 +1,8 @@
 import type { ScrapedStrike } from "@/models/strike.model";
-import { Strike, type IStrike } from "@/models/strike.model";
-import { dateISOInLisbon } from "./dateParser.controller";
+import type { StrikeComparableRecord } from "@/infra/repositories/strike.repository";
+import { findPotentialDuplicatesByDateRange } from "@/infra/repositories/strike.repository";
+import { dateISOInLisbon } from "@/domain/date";
 
-/** Words that appear in almost every strike headline — ignore for overlap. */
 const STRIKE_BOILERPLATE = new Set([
   "greve",
   "greves",
@@ -71,10 +71,6 @@ const PT_STOPWORDS = new Set([
   "amanhã",
 ]);
 
-/**
- * Temporal wording often changes between headlines describing the same strike.
- * We ignore these to focus similarity on operator/sector/location words.
- */
 const TITLE_TEMPORAL_WORDS = new Set([
   "segunda",
   "terca",
@@ -110,7 +106,6 @@ const TITLE_TEMPORAL_WORDS = new Set([
   "este",
 ]);
 
-/** Short sector / org codes that still identify the same strike when dates match. */
 const ENTITY_SHORT_CODES = new Set(["cp", "tap", "ctt", "sns", "metro"]);
 
 function stripDiacritics(s: string): string {
@@ -121,7 +116,6 @@ function normalizeToken(raw: string): string {
   return stripDiacritics(raw.toLowerCase()).replace(/[^a-z0-9]/g, "");
 }
 
-/** Meaningful tokens extracted from a title for similarity matching. */
 export function extractTitleWords(text: string): Set<string> {
   const normalized = stripDiacritics(text.toLowerCase());
   const words = normalized.match(/[a-záéíóúâêôãõç0-9]+/gi) ?? [];
@@ -142,10 +136,6 @@ function strikeTitle(s: Pick<ScrapedStrike, "title">): string {
   return s.title;
 }
 
-/**
- * Similarity by meaningful title words.
- * Uses overlap ratio against the smaller set to handle short/long title variants.
- */
 export function titleWordSetsSimilar(a: Set<string>, b: Set<string>): boolean {
   if (a.size === 0 || b.size === 0) return false;
   let interCount = 0;
@@ -162,7 +152,6 @@ export function titleWordSetsSimilar(a: Set<string>, b: Set<string>): boolean {
   const overlapRatio = interCount / minSize;
   if (overlapRatio >= 0.5) return true;
 
-  // Fallback for tiny titles, e.g. "Greve CP hoje" vs "CP em greve hoje".
   if (interCount >= 2 && minSize <= 3) return true;
 
   if (interCount === 1) {
@@ -192,9 +181,6 @@ export function isSameStrikeNews(
   return titleWordSetsSimilar(ta, tb);
 }
 
-/**
- * Drops later items that describe the same strike as an earlier one (search result order preserved).
- */
 export function dedupeScrapedStrikes(
   strikes: ScrapedStrike[],
 ): ScrapedStrike[] {
@@ -207,7 +193,7 @@ export function dedupeScrapedStrikes(
 }
 
 function docToComparable(
-  doc: Pick<IStrike, "title" | "description" | "strikeDates">,
+  doc: StrikeComparableRecord,
 ): Pick<ScrapedStrike, "title" | "description" | "strikeDates"> {
   return {
     title: doc.title,
@@ -216,31 +202,14 @@ function docToComparable(
   };
 }
 
-/**
- * Returns true if another strike already exists (different URL) for the same dates + similar title words.
- */
 export async function hasDuplicateInDatabase(
   entry: ScrapedStrike,
 ): Promise<boolean> {
   if (entry.strikeDates.length === 0) return false;
-  const times = entry.strikeDates.map((d) => d.getTime());
-  const padMs = 72 * 3600 * 1000;
-  const tMin = Math.min(...times) - padMs;
-  const tMax = Math.max(...times) + padMs;
+  const candidates = await findPotentialDuplicatesByDateRange(entry);
 
-  const candidates = await Strike.find({
-    url: { $ne: entry.url },
-    strikeDates: {
-      $elemMatch: { $gte: new Date(tMin), $lte: new Date(tMax) },
-    },
-  })
-    .select({ title: 1, description: 1, strikeDates: 1, url: 1 })
-    .lean()
-    .limit(200);
-
-  const e = entry;
   for (const c of candidates) {
-    if (isSameStrikeNews(e, docToComparable(c))) return true;
+    if (isSameStrikeNews(entry, docToComparable(c))) return true;
   }
   return false;
 }

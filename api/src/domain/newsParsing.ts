@@ -1,15 +1,13 @@
-import * as cheerio from "cheerio";
-import type { Browser } from "puppeteer";
 import dayjs from "dayjs";
-import logger from "./logger";
+import * as cheerio from "cheerio";
+import { type ScrapedStrike } from "@/models/strike.model";
 import {
   dateISOInLisbon,
   extractDatesFromText,
   keepTodayAndFutureDates,
   parsePtDate,
   todayISO,
-} from "../controllers/dateParser.controller";
-import { type ScrapedStrike } from "../models/strike.model";
+} from "@/domain/date";
 
 const STRIKE_KEYWORDS_PT = [
   "greve",
@@ -18,6 +16,13 @@ const STRIKE_KEYWORDS_PT = [
   "paralisações",
   "pré-aviso de greve",
 ] as const;
+
+interface ParsedArticle {
+  title: string;
+  snippet: string;
+  href: string;
+  dateText: string;
+}
 
 function containsStrikeKeyword(text: string): boolean {
   const t = text.toLowerCase();
@@ -33,46 +38,21 @@ function classifySector(text: string): string {
   )
     return "Transportes";
   if (/\b(médico|enfermeiro|hospitais?|saúde|sns)\b/.test(t)) return "Saúde";
-  if (/\b(professor|escola|docente|ensino|educação|universidade)\b/.test(t))
+  if (
+    /\b(professor|escola|docente|ensino|educação|universidade|fenprof|s.t.o.p)\b/.test(
+      t,
+    )
+  )
     return "Educação";
   if (/\b(lixo|resíduos|higiene urbana|municipal)\b/.test(t))
     return "Serviços Municipais";
   if (/\b(correios?|ctt\b|postal)\b/.test(t)) return "Correios";
   if (/\b(banco|financ|seguros?)\b/.test(t)) return "Banca e Finanças";
   if (/\b(avião|aeroporto|tap\b|ryanair|pilotos?)\b/.test(t)) return "Aviação";
+  if (/\b(procuradores|mp|justiça)\b/.test(t)) return "Justiça";
   return "Outros";
 }
 
-async function fetchPage(
-  browser: Browser,
-  url: string,
-  waitForSelector?: string,
-): Promise<string> {
-  const page = await browser.newPage();
-  await page.setUserAgent({
-    userAgent: "GrevesPortugalBot/1.0 (+https://greves-portugal.vercel.app)",
-  });
-  try {
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
-    if (waitForSelector) {
-      await page
-        .waitForSelector(waitForSelector, { timeout: 15_000 })
-        .catch(() => undefined);
-    }
-    return await page.content();
-  } finally {
-    await page.close();
-  }
-}
-
-interface ParsedArticle {
-  title: string;
-  snippet: string;
-  href: string;
-  dateText: string;
-}
-
-/** YYYY/MM/DD segment in Observador canonical URLs. */
 function extractDateFromObservadorUrl(href: string): Date | null {
   const m = href.match(/\/(20\d{2})\/(\d{2})\/(\d{2})\//);
   if (!m) return null;
@@ -90,20 +70,16 @@ function extractDateFromObservadorUrl(href: string): Date | null {
   return candidate;
 }
 
-/**
- * Best-effort article publish date for filtering old search hits.
- * Uses URL path (Observador) or result card dateText only — not the snippet,
- * which often contains strike dates unrelated to publication time.
- */
 function parseArticlePublishedDate(article: ParsedArticle): Date | null {
-  return extractDateFromObservadorUrl(article.href) ?? parsePtDate(article.dateText);
+  return (
+    extractDateFromObservadorUrl(article.href) ?? parsePtDate(article.dateText)
+  );
 }
 
 function resolveArticleReferenceDate(article: ParsedArticle): Date {
   return parseArticlePublishedDate(article) ?? new Date();
 }
 
-/** YYYY-MM-DD for the first day of the current calendar month (Europe/Lisbon). */
 function startOfCurrentMonthISO(): string {
   const now = dayjs();
   const y = new Intl.DateTimeFormat("en-CA", {
@@ -125,15 +101,11 @@ function normalizeGoogleRedirectUrl(raw: string): string {
       if (q && /^https?:\/\//i.test(q)) return q;
     }
   } catch {
-    // ignore
+    // ignore invalid URL
   }
   return raw;
 }
 
-/**
- * Returns true when the provided text has any explicit DD/MM/YYYY date
- * older than the current month (Europe/Lisbon).
- */
 function hasPastExplicitDmyDate(text: string): boolean {
   const monthStart = startOfCurrentMonthISO();
   const dmyPattern = /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/g;
@@ -149,7 +121,6 @@ function hasPastExplicitDmyDate(text: string): boolean {
     )
       continue;
 
-    // Validate calendar date (avoid rollover from invalid values like 31/02/2026).
     const candidate = new Date(year, month - 1, day);
     if (
       candidate.getFullYear() !== year ||
@@ -165,8 +136,9 @@ function hasPastExplicitDmyDate(text: string): boolean {
   return false;
 }
 
-/** Observador search uses an embedded Google Custom Search (CSE) results list. */
-function parseObservadorCseResults($: cheerio.CheerioAPI): ParsedArticle[] {
+export function parseObservadorCseResults(
+  $: cheerio.CheerioAPI,
+): ParsedArticle[] {
   const baseUrl = "https://observador.pt";
   const articles: ParsedArticle[] = [];
 
@@ -206,7 +178,42 @@ function parseObservadorCseResults($: cheerio.CheerioAPI): ParsedArticle[] {
   return articles;
 }
 
-function articlesToStrikes(articles: ParsedArticle[]): ScrapedStrike[] {
+export function filterCurrentOrFutureArticles(
+  articles: ParsedArticle[],
+): ParsedArticle[] {
+  const filtered = articles.filter(
+    (a) => !`${a.title} ${a.snippet}`.toLowerCase().includes("opinião"),
+  );
+  const currentYearInLisbon = Number(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Lisbon",
+      year: "numeric",
+    }).format(dayjs().toDate()),
+  );
+  const yearFiltered = filtered.filter((a) => {
+    const text = `${a.title} ${a.snippet}`.toLowerCase();
+    const years = [...text.matchAll(/\b(20\d{2})\b/g)].map((m) => Number(m[1]));
+    if (years.length === 0) return true;
+    return years.every((y) => y >= currentYearInLisbon);
+  });
+
+  const todayCutoff = todayISO();
+  const publishFiltered = yearFiltered.filter((a) => {
+    const pub = parseArticlePublishedDate(a);
+    if (!pub) return true;
+    return dateISOInLisbon(pub) >= todayCutoff;
+  });
+
+  return publishFiltered.filter((a) => {
+    const text = `${a.title} ${a.snippet} ${a.dateText}`;
+    const articleReferenceDate = resolveArticleReferenceDate(a);
+    const dates = extractDatesFromText(text, articleReferenceDate);
+    if (dates.length === 0) return true;
+    return dates.some((d) => dateISOInLisbon(d) >= todayCutoff);
+  });
+}
+
+export function articlesToStrikes(articles: ParsedArticle[]): ScrapedStrike[] {
   return articles.map(({ title, snippet, href, dateText }) => {
     const fullText = `${title} ${snippet}`;
     const articleReferenceDate = resolveArticleReferenceDate({
@@ -225,64 +232,6 @@ function articlesToStrikes(articles: ParsedArticle[]): ScrapedStrike[] {
       url: href,
       strikeDates,
       sector: classifySector(fullText),
-      workers: null,
-      confirmed: false,
     };
   });
-}
-
-const OBSERVADOR_SEARCH = "https://observador.pt/pesquisa/?q=greve";
-
-/**
- * Scrapes Observador's search results for "greve".
- */
-export async function scrapeObservador(
-  browser: Browser,
-): Promise<ScrapedStrike[]> {
-  logger.info("Scraping Observador...", { url: OBSERVADOR_SEARCH });
-
-  try {
-    const html = await fetchPage(browser, OBSERVADOR_SEARCH, ".gsc-webResult");
-    const $ = cheerio.load(html);
-    const articles = parseObservadorCseResults($);
-    const filtered = articles.filter(
-      (a) => !`${a.title} ${a.snippet}`.toLowerCase().includes("opinião"),
-    );
-    const currentYearInLisbon = Number(
-      new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Europe/Lisbon",
-        year: "numeric",
-      }).format(dayjs().toDate()),
-    );
-    const yearFiltered = filtered.filter((a) => {
-      const text = `${a.title} ${a.snippet}`.toLowerCase();
-      const years = [...text.matchAll(/\b(20\d{2})\b/g)].map((m) =>
-        Number(m[1]),
-      );
-      if (years.length === 0) return true;
-      return years.every((y) => y >= currentYearInLisbon);
-    });
-
-    const todayCutoff = todayISO();
-    const publishFiltered = yearFiltered.filter((a) => {
-      const pub = parseArticlePublishedDate(a);
-      if (!pub) return true;
-      return dateISOInLisbon(pub) >= todayCutoff;
-    });
-
-    const monthFiltered = publishFiltered.filter((a) => {
-      const text = `${a.title} ${a.snippet} ${a.dateText}`;
-      const articleReferenceDate = resolveArticleReferenceDate(a);
-      const dates = extractDatesFromText(text, articleReferenceDate);
-      if (dates.length === 0) return true;
-      return dates.some((d) => dateISOInLisbon(d) >= todayCutoff);
-    });
-
-    const results = articlesToStrikes(monthFiltered);
-    logger.info(`Observador: found ${results.length} strike articles`);
-    return results;
-  } catch (err) {
-    logger.error("Observador scraping failed", { err: (err as Error).message });
-    return [];
-  }
 }

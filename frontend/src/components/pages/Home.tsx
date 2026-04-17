@@ -1,9 +1,9 @@
 import { useState } from "react";
 import "../styles/App.css";
-import { fetchAPI } from "../lib/api";
-import { StrikeCard } from "../components/Card";
+import { fetchAPI } from "../../lib/api";
+import { StrikeCard } from "../ui/Card";
 import { useQueries } from "@tanstack/react-query";
-import type { Strike } from "../types";
+import type { Strike } from "../../types";
 import { Helmet } from "react-helmet-async";
 
 type StrikeView = "all" | "today" | "future";

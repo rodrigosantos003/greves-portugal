@@ -1,22 +1,16 @@
 import { Request, Response } from "express";
-import { Strike } from "@/models/strike.model";
 import logger from "@/libs/logger";
-import dayjs from "dayjs";
+import {
+  getCurrentDayStrikesData,
+  getFutureStrikesData,
+} from "@/services/strikeQuery.service";
 
 export const getCurrentDayStrikes = async (
-  req: Request,
+  _req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const startOfToday = dayjs().startOf("day").toDate();
-    const startOfTomorrow = dayjs(startOfToday).add(1, "day").toDate();
-
-    const data = await Strike.find({
-      strikeDates: {
-        $elemMatch: { $eq: startOfToday, $lt: startOfTomorrow },
-      },
-    }).lean();
-
+    const data = await getCurrentDayStrikesData();
     res.json({ strikes: data });
   } catch (err) {
     logger.error("GET /strikes failed", { err: (err as Error).message });
@@ -25,21 +19,14 @@ export const getCurrentDayStrikes = async (
 };
 
 export const getFutureStrikes = async (
-  req: Request,
+  _req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const startOfTomorrow = dayjs().startOf("day").add(1, "day").toDate();
-    const startOfFiveDays = dayjs(startOfTomorrow).add(5, "day").toDate();
-
-    const data = await Strike.find({
-      strikeDates: {
-        $elemMatch: { $gte: startOfTomorrow, $lt: startOfFiveDays },
-      },
-    }).lean();
-
+    const data = await getFutureStrikesData();
     res.json({ strikes: data });
   } catch (err) {
+    logger.error("GET /strikes/future failed", { err: (err as Error).message });
     res.status(500).json({ error: "Internal server error" });
   }
 };

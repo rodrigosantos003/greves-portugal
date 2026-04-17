@@ -109,12 +109,11 @@
           },
           "sector": { "type": "string" },
           "workers": { "type": "string", "nullable": true },
-          "confirmed": { "type": "boolean" },
           "scrapedAt": { "type": "string", "format": "date-time" },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["title", "url", "strikeDates", "confirmed"]
+        "required": ["title", "url", "strikeDates"]
       },
       "StrikesListResponse": {
         "type": "object",

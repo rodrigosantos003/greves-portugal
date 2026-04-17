@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
-import { ApiDocsPage } from "./components/API-Docs";
-import { Home } from "./components/Home";
+import { ApiDocsPage } from "./components/pages/API-Docs";
+import { Home } from "./components/pages/Home";
 
 function App() {
   return (

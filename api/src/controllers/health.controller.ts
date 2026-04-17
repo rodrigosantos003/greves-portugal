@@ -6,14 +6,12 @@ export const getHealth = async (
   res: Response,
 ): Promise<void> => {
   try {
-    // check if the database is connected
     const dbConnected = await mongoose.connection.db?.admin().ping();
     if (!dbConnected) {
       res.status(500).json({ ok: false, error: "Database connection failed" });
       return;
     }
 
-    // check if the server is running
     const serverRunning = await new Promise((resolve) => {
       setTimeout(() => {
         resolve(true);

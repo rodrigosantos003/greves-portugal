@@ -6,7 +6,6 @@ export type Strike = {
   strikeDates: Date[];
   sector?: string;
   workers?: string;
-  confirmed: boolean;
   scrapedAt: Date;
   createdAt: Date;
   updatedAt: Date;

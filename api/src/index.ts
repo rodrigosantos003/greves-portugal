@@ -2,7 +2,7 @@ import "dotenv/config";
 import puppeteer, { type Browser } from "puppeteer";
 import cron from "node-cron";
 import { connectDB, disconnectDB } from "@/libs/connection";
-import { runScraper } from "@/controllers/scraper.controller";
+import { runScraper } from "@/services/strikeIngestion.service";
 import logger from "@/libs/logger";
 import { ScrapeSummary } from "@/models/strike.model";
 
