@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import type { Strike } from "../types";
+import type { Strike } from "../../types";
 
 export function StrikeCard({ strike, idx }: { strike: Strike; idx: number }) {
   return (
@@ -14,7 +14,7 @@ export function StrikeCard({ strike, idx }: { strike: Strike; idx: number }) {
       <span className="gp-badge">{strike.sector}</span>
       <div className="gp-dates">
         {strike.strikeDates
-          .map((date) => dayjs(date).format("DD/MM/YYYY"))
+          .map((date: Date) => dayjs(date).format("DD/MM/YYYY"))
           .join(" → ")}
       </div>
     </div>

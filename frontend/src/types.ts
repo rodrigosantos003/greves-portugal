@@ -5,7 +5,6 @@ export type Strike = {
   url: string;
   strikeDates: Date[];
   sector?: string;
-  workers?: string;
   scrapedAt: Date;
   createdAt: Date;
   updatedAt: Date;
