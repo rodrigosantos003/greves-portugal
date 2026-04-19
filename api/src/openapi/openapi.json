@@ -37,8 +37,8 @@
     },
     "/strikes/future": {
       "get": {
-        "summary": "Upcoming strikes (next 5 days)",
-        "description": "Returns strikes with dates from tomorrow through the next five days (exclusive end), based on server date.",
+        "summary": "Upcoming strikes (next 2 weeks)",
+        "description": "Returns strikes with dates from tomorrow through the next two weeks (exclusive end), based on server date.",
         "operationId": "getFutureStrikes",
         "tags": ["Strikes"],
         "responses": {

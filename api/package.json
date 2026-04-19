@@ -10,6 +10,7 @@
     "dev": "tsx watch src/server.ts"
   },
   "dependencies": {
+    "@scalar/express-api-reference": "^0.9.9",
     "@types/cors": "^2.8.19",
     "cheerio": "^1.0.0",
     "cors": "^2.8.6",

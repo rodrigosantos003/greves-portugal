@@ -34,12 +34,11 @@ app.get("/openapi.json", (_req, res) => {
   res.json(openapiDocument);
 });
 
-setupRoutes(app);
-
 const port = Number(process.env.PORT ?? 3000);
 
 async function start(): Promise<void> {
   await connectDB();
+  await setupRoutes(app);
   const server = app.listen(port, () => {
     logger.info(`API listening on port ${port}`);
   });
