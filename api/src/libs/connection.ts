@@ -12,7 +12,7 @@ export async function connectDB(): Promise<void> {
     logger.warn("MongoDB disconnected"),
   );
 
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, { dbName: process.env.DB_NAME ?? "test" });
 }
 
 export async function disconnectDB(): Promise<void> {
